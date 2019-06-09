@@ -1,0 +1,862 @@
+{
+  "children": [
+    {
+      "children": [
+        {
+          "index": 1,
+          "personae": [
+          ],
+          "scene": {
+            "act": null,
+            "index": 0,
+            "setting": null,
+            "text": "Prologue",
+            "type": "prologue"
+          },
+          "text": "Enter FOO",
+          "type": "entrance"
+        },
+        {
+          "index": 3,
+          "persona": {
+            "index": 35,
+            "name": "Foo",
+            "short": null,
+            "text": "FOO",
+            "type": "persona"
+          },
+          "scene": {
+            "act": null,
+            "index": 0,
+            "setting": null,
+            "text": "Prologue",
+            "type": "prologue"
+          },
+          "speech": [
+            {
+              "index": 3,
+              "line": "Bar.",
+              "lineno": 1,
+              "linepart": 0,
+              "persona": {
+                "index": 35,
+                "name": "Foo",
+                "short": null,
+                "text": "FOO",
+                "type": "persona"
+              },
+              "scene": {
+                "act": null,
+                "index": 0,
+                "setting": null,
+                "text": "Prologue",
+                "type": "prologue"
+              },
+              "type": "dialogue"
+            }
+          ],
+          "type": "speech"
+        },
+        {
+          "index": 5,
+          "persona": {
+            "index": 4,
+            "name": "A Bar",
+            "short": null,
+            "text": "A Bar",
+            "type": "persona"
+          },
+          "scene": {
+            "act": null,
+            "index": 0,
+            "setting": null,
+            "text": "Prologue",
+            "type": "prologue"
+          },
+          "speech": [
+            {
+              "index": 5,
+              "line": "Bar!",
+              "lineno": 2,
+              "linepart": 0,
+              "persona": {
+                "index": 4,
+                "name": "A Bar",
+                "short": null,
+                "text": "A Bar",
+                "type": "persona"
+              },
+              "scene": {
+                "act": null,
+                "index": 0,
+                "setting": null,
+                "text": "Prologue",
+                "type": "prologue"
+              },
+              "type": "dialogue"
+            }
+          ],
+          "type": "speech"
+        },
+        {
+          "index": 7,
+          "persona": {
+            "index": 6,
+            "name": "Bar'S Foo",
+            "short": null,
+            "text": "Bar's Foo",
+            "type": "persona"
+          },
+          "scene": {
+            "act": null,
+            "index": 0,
+            "setting": null,
+            "text": "Prologue",
+            "type": "prologue"
+          },
+          "speech": [
+            {
+              "index": 7,
+              "line": "Foo!",
+              "lineno": 3,
+              "linepart": 0,
+              "persona": {
+                "index": 6,
+                "name": "Bar'S Foo",
+                "short": null,
+                "text": "Bar's Foo",
+                "type": "persona"
+              },
+              "scene": {
+                "act": null,
+                "index": 0,
+                "setting": null,
+                "text": "Prologue",
+                "type": "prologue"
+              },
+              "type": "dialogue"
+            }
+          ],
+          "type": "speech"
+        },
+        {
+          "index": 8,
+          "personae": [
+          ],
+          "scene": {
+            "act": null,
+            "index": 0,
+            "setting": null,
+            "text": "Prologue",
+            "type": "prologue"
+          },
+          "text": "Exeunt",
+          "type": "exit"
+        }
+      ],
+      "node": {
+        "act": null,
+        "index": 0,
+        "setting": null,
+        "text": "Prologue",
+        "type": "prologue"
+      },
+      "personae": [
+        {
+          "index": 4,
+          "name": "A Bar",
+          "short": null,
+          "text": "A Bar",
+          "type": "persona"
+        },
+        {
+          "index": 6,
+          "name": "Bar'S Foo",
+          "short": null,
+          "text": "Bar's Foo",
+          "type": "persona"
+        },
+        {
+          "index": 35,
+          "name": "Foo",
+          "short": null,
+          "text": "FOO",
+          "type": "persona"
+        }
+      ],
+      "type": "tree"
+    },
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "index": 11,
+              "personae": [
+              ],
+              "scene": {
+                "act": {
+                  "index": 9,
+                  "num": 1,
+                  "text": "ACT I",
+                  "type": "act"
+                },
+                "index": 10,
+                "setting": null,
+                "text": "Prologue",
+                "type": "prologue"
+              },
+              "text": "Enter BAR",
+              "type": "entrance"
+            },
+            {
+              "index": 13,
+              "persona": {
+                "index": 25,
+                "name": "Bar",
+                "short": null,
+                "text": "BAR",
+                "type": "persona"
+              },
+              "scene": {
+                "act": {
+                  "index": 9,
+                  "num": 1,
+                  "text": "ACT I",
+                  "type": "act"
+                },
+                "index": 10,
+                "setting": null,
+                "text": "Prologue",
+                "type": "prologue"
+              },
+              "speech": [
+                {
+                  "action": "Aside",
+                  "index": 13,
+                  "persona": {
+                    "index": 25,
+                    "name": "Bar",
+                    "short": null,
+                    "text": "BAR",
+                    "type": "persona"
+                  },
+                  "scene": {
+                    "act": {
+                      "index": 9,
+                      "num": 1,
+                      "text": "ACT I",
+                      "type": "act"
+                    },
+                    "index": 10,
+                    "setting": null,
+                    "text": "Prologue",
+                    "type": "prologue"
+                  },
+                  "type": "action"
+                },
+                {
+                  "index": 14,
+                  "line": "Foo.",
+                  "lineno": 4,
+                  "linepart": 0,
+                  "persona": {
+                    "index": 25,
+                    "name": "Bar",
+                    "short": null,
+                    "text": "BAR",
+                    "type": "persona"
+                  },
+                  "scene": {
+                    "act": {
+                      "index": 9,
+                      "num": 1,
+                      "text": "ACT I",
+                      "type": "act"
+                    },
+                    "index": 10,
+                    "setting": null,
+                    "text": "Prologue",
+                    "type": "prologue"
+                  },
+                  "type": "dialogue"
+                }
+              ],
+              "type": "speech"
+            }
+          ],
+          "node": {
+            "act": {
+              "index": 9,
+              "num": 1,
+              "text": "ACT I",
+              "type": "act"
+            },
+            "index": 10,
+            "setting": null,
+            "text": "Prologue",
+            "type": "prologue"
+          },
+          "personae": [
+            {
+              "index": 25,
+              "name": "Bar",
+              "short": null,
+              "text": "BAR",
+              "type": "persona"
+            }
+          ],
+          "type": "tree"
+        },
+        {
+          "act": {
+            "index": 9,
+            "num": 1,
+            "text": "ACT I",
+            "type": "act"
+          },
+          "index": 15,
+          "text": "INTERMISSION",
+          "type": "intermission"
+        },
+        {
+          "children": [
+            {
+              "index": 17,
+              "personae": [
+              ],
+              "scene": {
+                "act": {
+                  "index": 9,
+                  "num": 1,
+                  "text": "ACT I",
+                  "type": "act"
+                },
+                "index": 16,
+                "num": 1,
+                "setting": null,
+                "text": "SCENE I",
+                "type": "scene"
+              },
+              "text": "Enter FOO and BAR",
+              "type": "entrance"
+            },
+            {
+              "index": 19,
+              "persona": {
+                "index": 35,
+                "name": "Foo",
+                "short": null,
+                "text": "FOO",
+                "type": "persona"
+              },
+              "scene": {
+                "act": {
+                  "index": 9,
+                  "num": 1,
+                  "text": "ACT I",
+                  "type": "act"
+                },
+                "index": 16,
+                "num": 1,
+                "setting": null,
+                "text": "SCENE I",
+                "type": "scene"
+              },
+              "speech": [
+                {
+                  "action": "To BAR",
+                  "index": 19,
+                  "persona": {
+                    "index": 35,
+                    "name": "Foo",
+                    "short": null,
+                    "text": "FOO",
+                    "type": "persona"
+                  },
+                  "scene": {
+                    "act": {
+                      "index": 9,
+                      "num": 1,
+                      "text": "ACT I",
+                      "type": "act"
+                    },
+                    "index": 16,
+                    "num": 1,
+                    "setting": null,
+                    "text": "SCENE I",
+                    "type": "scene"
+                  },
+                  "type": "action"
+                },
+                {
+                  "index": 20,
+                  "line": "Bar.",
+                  "lineno": 5,
+                  "linepart": 0,
+                  "persona": {
+                    "index": 35,
+                    "name": "Foo",
+                    "short": null,
+                    "text": "FOO",
+                    "type": "persona"
+                  },
+                  "scene": {
+                    "act": {
+                      "index": 9,
+                      "num": 1,
+                      "text": "ACT I",
+                      "type": "act"
+                    },
+                    "index": 16,
+                    "num": 1,
+                    "setting": null,
+                    "text": "SCENE I",
+                    "type": "scene"
+                  },
+                  "type": "dialogue"
+                }
+              ],
+              "type": "speech"
+            },
+            {
+              "index": 22,
+              "persona": {
+                "index": 25,
+                "name": "Bar",
+                "short": null,
+                "text": "BAR",
+                "type": "persona"
+              },
+              "scene": {
+                "act": {
+                  "index": 9,
+                  "num": 1,
+                  "text": "ACT I",
+                  "type": "act"
+                },
+                "index": 16,
+                "num": 1,
+                "setting": null,
+                "text": "SCENE I",
+                "type": "scene"
+              },
+              "speech": [
+                {
+                  "index": 22,
+                  "line": "Foo.",
+                  "lineno": 6,
+                  "linepart": 0,
+                  "persona": {
+                    "index": 25,
+                    "name": "Bar",
+                    "short": null,
+                    "text": "BAR",
+                    "type": "persona"
+                  },
+                  "scene": {
+                    "act": {
+                      "index": 9,
+                      "num": 1,
+                      "text": "ACT I",
+                      "type": "act"
+                    },
+                    "index": 16,
+                    "num": 1,
+                    "setting": null,
+                    "text": "SCENE I",
+                    "type": "scene"
+                  },
+                  "type": "dialogue"
+                }
+              ],
+              "type": "speech"
+            },
+            {
+              "index": 24,
+              "persona": {
+                "index": 35,
+                "name": "Foo",
+                "short": null,
+                "text": "FOO",
+                "type": "persona"
+              },
+              "scene": {
+                "act": {
+                  "index": 9,
+                  "num": 1,
+                  "text": "ACT I",
+                  "type": "act"
+                },
+                "index": 16,
+                "num": 1,
+                "setting": null,
+                "text": "SCENE I",
+                "type": "scene"
+              },
+              "speech": [
+                {
+                  "index": 24,
+                  "line": "Bar. ...",
+                  "lineno": 7,
+                  "linepart": 0,
+                  "persona": {
+                    "index": 35,
+                    "name": "Foo",
+                    "short": null,
+                    "text": "FOO",
+                    "type": "persona"
+                  },
+                  "scene": {
+                    "act": {
+                      "index": 9,
+                      "num": 1,
+                      "text": "ACT I",
+                      "type": "act"
+                    },
+                    "index": 16,
+                    "num": 1,
+                    "setting": null,
+                    "text": "SCENE I",
+                    "type": "scene"
+                  },
+                  "type": "dialogue"
+                }
+              ],
+              "type": "speech"
+            },
+            {
+              "index": 26,
+              "persona": {
+                "index": 25,
+                "name": "Bar",
+                "short": null,
+                "text": "BAR",
+                "type": "persona"
+              },
+              "scene": {
+                "act": {
+                  "index": 9,
+                  "num": 1,
+                  "text": "ACT I",
+                  "type": "act"
+                },
+                "index": 16,
+                "num": 1,
+                "setting": null,
+                "text": "SCENE I",
+                "type": "scene"
+              },
+              "speech": [
+                {
+                  "index": 26,
+                  "line": "... Foo. ...",
+                  "lineno": 7,
+                  "linepart": 0,
+                  "persona": {
+                    "index": 25,
+                    "name": "Bar",
+                    "short": null,
+                    "text": "BAR",
+                    "type": "persona"
+                  },
+                  "scene": {
+                    "act": {
+                      "index": 9,
+                      "num": 1,
+                      "text": "ACT I",
+                      "type": "act"
+                    },
+                    "index": 16,
+                    "num": 1,
+                    "setting": null,
+                    "text": "SCENE I",
+                    "type": "scene"
+                  },
+                  "type": "dialogue"
+                }
+              ],
+              "type": "speech"
+            },
+            {
+              "index": 28,
+              "persona": {
+                "index": 35,
+                "name": "Foo",
+                "short": null,
+                "text": "FOO",
+                "type": "persona"
+              },
+              "scene": {
+                "act": {
+                  "index": 9,
+                  "num": 1,
+                  "text": "ACT I",
+                  "type": "act"
+                },
+                "index": 16,
+                "num": 1,
+                "setting": null,
+                "text": "SCENE I",
+                "type": "scene"
+              },
+              "speech": [
+                {
+                  "index": 28,
+                  "line": "... Bar.",
+                  "lineno": 7,
+                  "linepart": 0,
+                  "persona": {
+                    "index": 35,
+                    "name": "Foo",
+                    "short": null,
+                    "text": "FOO",
+                    "type": "persona"
+                  },
+                  "scene": {
+                    "act": {
+                      "index": 9,
+                      "num": 1,
+                      "text": "ACT I",
+                      "type": "act"
+                    },
+                    "index": 16,
+                    "num": 1,
+                    "setting": null,
+                    "text": "SCENE I",
+                    "type": "scene"
+                  },
+                  "type": "dialogue"
+                },
+                {
+                  "action": "A long stage direction that goes on forever and says far to much to be reasonable. So much so that it takes up more than two lines, which is just ridiculous. I mean seriously, why? Why write so much for one stage direction? For what purpose?",
+                  "index": 29,
+                  "scene": {
+                    "act": {
+                      "index": 9,
+                      "num": 1,
+                      "text": "ACT I",
+                      "type": "act"
+                    },
+                    "index": 16,
+                    "num": 1,
+                    "setting": null,
+                    "text": "SCENE I",
+                    "type": "scene"
+                  },
+                  "stop": true,
+                  "type": "direction"
+                }
+              ],
+              "type": "speech"
+            }
+          ],
+          "node": {
+            "act": {
+              "index": 9,
+              "num": 1,
+              "text": "ACT I",
+              "type": "act"
+            },
+            "index": 16,
+            "num": 1,
+            "setting": null,
+            "text": "SCENE I",
+            "type": "scene"
+          },
+          "personae": [
+            {
+              "index": 35,
+              "name": "Foo",
+              "short": null,
+              "text": "FOO",
+              "type": "persona"
+            },
+            {
+              "index": 25,
+              "name": "Bar",
+              "short": null,
+              "text": "BAR",
+              "type": "persona"
+            }
+          ],
+          "type": "tree"
+        },
+        {
+          "children": [
+            {
+              "index": 34,
+              "personae": [
+              ],
+              "scene": {
+                "act": {
+                  "index": 9,
+                  "num": 1,
+                  "text": "ACT I",
+                  "type": "act"
+                },
+                "index": 33,
+                "setting": null,
+                "text": "EPILOGUE",
+                "type": "epilogue"
+              },
+              "text": "Enter FOO",
+              "type": "entrance"
+            },
+            {
+              "index": 36,
+              "persona": {
+                "index": 35,
+                "name": "Foo",
+                "short": null,
+                "text": "FOO",
+                "type": "persona"
+              },
+              "scene": {
+                "act": {
+                  "index": 9,
+                  "num": 1,
+                  "text": "ACT I",
+                  "type": "act"
+                },
+                "index": 33,
+                "setting": null,
+                "text": "EPILOGUE",
+                "type": "epilogue"
+              },
+              "speech": [
+                {
+                  "action": "Reads",
+                  "index": 36,
+                  "persona": {
+                    "index": 35,
+                    "name": "Foo",
+                    "short": null,
+                    "text": "FOO",
+                    "type": "persona"
+                  },
+                  "scene": {
+                    "act": {
+                      "index": 9,
+                      "num": 1,
+                      "text": "ACT I",
+                      "type": "act"
+                    },
+                    "index": 33,
+                    "setting": null,
+                    "text": "EPILOGUE",
+                    "type": "epilogue"
+                  },
+                  "type": "action"
+                },
+                {
+                  "index": 37,
+                  "line": "Foo.",
+                  "lineno": 8,
+                  "linepart": 0,
+                  "persona": {
+                    "index": 35,
+                    "name": "Foo",
+                    "short": null,
+                    "text": "FOO",
+                    "type": "persona"
+                  },
+                  "scene": {
+                    "act": {
+                      "index": 9,
+                      "num": 1,
+                      "text": "ACT I",
+                      "type": "act"
+                    },
+                    "index": 33,
+                    "setting": null,
+                    "text": "EPILOGUE",
+                    "type": "epilogue"
+                  },
+                  "type": "dialogue"
+                }
+              ],
+              "type": "speech"
+            }
+          ],
+          "node": {
+            "act": {
+              "index": 9,
+              "num": 1,
+              "text": "ACT I",
+              "type": "act"
+            },
+            "index": 33,
+            "setting": null,
+            "text": "EPILOGUE",
+            "type": "epilogue"
+          },
+          "personae": [
+            {
+              "index": 35,
+              "name": "Foo",
+              "short": null,
+              "text": "FOO",
+              "type": "persona"
+            }
+          ],
+          "type": "tree"
+        }
+      ],
+      "node": {
+        "index": 9,
+        "num": 1,
+        "text": "ACT I",
+        "type": "act"
+      },
+      "personae": [
+      ],
+      "type": "tree"
+    }
+  ],
+  "meta": {
+    "author": "William Shakespeare",
+    "edition": 1,
+    "editors": [
+    ],
+    "language": "en-GB-emodeng",
+    "publisher": "Published w\/ \u2764\ufe0f using iambic - https:\/\/pypi.org\/project\/iambic",
+    "rights": "None",
+    "subtitle": null,
+    "tags": [
+    ],
+    "title": null,
+    "type": "meta"
+  },
+  "personae": [
+    {
+      "index": 35,
+      "name": "Foo",
+      "short": null,
+      "text": "FOO",
+      "type": "persona"
+    },
+    {
+      "index": 4,
+      "name": "A Bar",
+      "short": null,
+      "text": "A Bar",
+      "type": "persona"
+    },
+    {
+      "index": 6,
+      "name": "Bar'S Foo",
+      "short": null,
+      "text": "Bar's Foo",
+      "type": "persona"
+    },
+    {
+      "index": 25,
+      "name": "Bar",
+      "short": null,
+      "text": "BAR",
+      "type": "persona"
+    }
+  ],
+  "type": "play"
+}
