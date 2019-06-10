@@ -7,6 +7,7 @@ certifi==2019.3.9
 chardet==3.0.4
 Click==7.0
 codecov==2.0.15
+coverage==4.5.3
 dataslots==1.0.1
 defusedxml==0.6.0
 docutils==0.14
@@ -27,6 +28,7 @@ py==1.8.0
 Pygments==2.4.2
 pyparsing==2.4.0
 pytest==4.6.2
+pytest-cov==2.6.1
 python-dateutil==2.8.0
 PyYAML==5.1.1
 readme-renderer==24.0
