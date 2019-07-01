@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 import enum
+import functools
 import re
 
 import cachetools.func
@@ -66,7 +67,7 @@ class RomanNumeral(int, enum.Enum):
         return result
 
     @classmethod
-    @cachetools.func.lru_cache(maxsize=5000)
+    @functools.lru_cache(maxsize=5000)
     def to_number(cls, num: str) -> int:
         """Get an integer from a valid Roman Numeral Notation.
 

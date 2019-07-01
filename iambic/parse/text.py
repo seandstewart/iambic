@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 import dataclasses
+import functools
 import logging
 import typing
 from collections import defaultdict
@@ -166,9 +167,9 @@ class Parser:
                 and node.type in {NodeType.DIAL, prev.type}
                 and not prev.match.groupdict().get("end")
             ):
-                prev.text = f"{prev.text.strip()} {node.text.strip()}"
-                prev.match = prev.pattern.match(prev.text)
-                ctx.index[-1] = prev
+                text = f"{prev.text.strip()} {node.text.strip()}"
+                match = prev.pattern.match(text)
+                ctx.index[-1] = prev.replace(text=text, match=match)
                 append = False
         return append
 
@@ -190,9 +191,9 @@ class Parser:
             else InputType.MD
         )
 
-    @cachetools.func.lru_cache()
+    @functools.lru_cache()
     def parse(
-        self, text: str, title: str = None, *, input_type: InputType = None
+        self, text: str, title: str = None, *, input_type: InputType = None, tree: bool = True
     ) -> Play:
         ctx = ParserContext()
         input_type = input_type or self.guess_formatting(text)
@@ -205,7 +206,7 @@ class Parser:
                 handler = self.__parser_map[node.type]
                 ctx = handler(ctx=ctx, node=node)
 
-        return ctx.index.to_tree(title=title)
+        return ctx.index.to_tree(title=title) if tree else ctx.index
 
     __call__ = parse
 

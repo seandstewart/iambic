@@ -435,15 +435,5 @@ PARSED = Play(
         Persona(index=6, text="Bar's Foo", name="Bar'S Foo", short=None),
         Persona(index=25, text="BAR", name="Bar", short=None),
     ),
-    meta=MetaData(
-        rights="None",
-        language="en-GB-emodeng",
-        publisher="Published w/ ❤️ using iambic - https://pypi.org/project/iambic",
-        title=None,
-        subtitle=None,
-        edition=1,
-        author="William Shakespeare",
-        editors=(),
-        tags=(),
-    ),
+    meta=MetaData(),
 )

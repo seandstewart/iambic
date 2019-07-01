@@ -6,7 +6,7 @@ import functools
 import inspect
 import json
 import re
-from collections import UserList
+from collections import deque
 from typing import (
     Pattern,
     ClassVar,
@@ -21,11 +21,13 @@ from typing import (
     Match,
     Mapping,
     Collection,
+    Callable,
+    Deque,
 )
 
 import inflection
 import typic
-from cachetools import func, cached, LRUCache
+from cachetools import func, cached, LRUCache, LFUCache
 from cachetools.keys import hashkey
 
 from iambic import schema, roman
@@ -97,7 +99,7 @@ class NodePattern(enum.Enum):
     DIAL = re.compile(r"(?P<dialogue>(^.+))")
 
     @classmethod
-    @func.lru_cache(maxsize=len(list(NodeType)))
+    @functools.lru_cache(maxsize=len(list(NodeType)))
     def get(cls, node: NodeType) -> Pattern:
         """Get the pattern matching this node-type."""
         for pattern in cls:
@@ -133,7 +135,7 @@ def asdict(obj):
 
 class NodeMixin:
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def klass(self):
         return type(self).__name__.lower()
 
@@ -151,12 +153,12 @@ class Act(NodeMixin):
     num: int
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def id(self):
         return inflection.parameterize(f"act-{self.col}")
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def col(self):
         return roman.numeral(self.num)
 
@@ -180,12 +182,12 @@ class Scene(NodeMixin):
     setting: Optional[str]
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def id(self) -> str:
         return inflection.parameterize(f"{self.act.id}-scene-{roman.numeral(self.num)}")
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def col(self) -> str:
         return f"{self.act.col}.{roman.numeral(self.num).lower()}"
 
@@ -195,7 +197,7 @@ class Scene(NodeMixin):
         num = int(numeral) if numeral.isdigit() else roman.integer(numeral)
         setting = " ".join(node.pieces[2:]) if len(node.pieces) > 2 else None
         parent = node.parent or node.act or node.scene
-        parent = parent.resolve() if isinstance(parent, cls) else parent
+        parent = parent.resolve() if hasattr(parent, "resolve") else parent
         return cls(
             index=node.index, text=node.match_text, num=num, act=parent, setting=setting
         )
@@ -213,12 +215,12 @@ class Prologue(NodeMixin):
     act: Act = None
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def id(self):
         return f"{self.act.id}-prologue" if self.act else "prologue"
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def col(self):
         return f"{f'{self.act.col}.' if self.act else ''}P"
 
@@ -236,12 +238,12 @@ class Epilogue(Prologue):
     type: ClassVar[NodeType] = NodeType.EPIL
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def id(self):
         return f"{self.act.id}-epilogue" if self.act else "epilogue"
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def col(self):
         return f"{f'{self.act.col}.' if self.act else ''}E"
 
@@ -257,7 +259,7 @@ class Intermission(NodeMixin):
     act: Act
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def id(self):
         return f"intermission"
 
@@ -268,7 +270,7 @@ class Intermission(NodeMixin):
         )
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def col(self):
         return "INT"
 
@@ -296,7 +298,7 @@ class Persona(NodeMixin):
     short: str = None
 
     # Singleton pattern utilizing LRU cache
-    @cached(cache=LRUCache(128), key=persona_cache_key)
+    @cached(cache=LFUCache(5000), key=persona_cache_key)
     def __new__(
         cls,
         index: int = None,
@@ -308,11 +310,11 @@ class Persona(NodeMixin):
 
     def __eq__(self, other) -> bool:
         return (
-            other.name == self.name if hasattr(other, "name") else super().__eq__(other)
+            other.name == self.name if hasattr(other, "name") else False
         )
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def id(self):
         return inflection.parameterize(self.name)
 
@@ -333,7 +335,7 @@ class Entrance(NodeMixin):
     personae: Optional[Tuple[Persona]] = dataclasses.field(default_factory=tuple)
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def id(self):
         return f"{self.scene.id}-entrance-{self.index}"
 
@@ -353,7 +355,7 @@ class Exit(Entrance):
     type: ClassVar[NodeType] = NodeType.EXIT
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def id(self):
         return f"{self.scene.id}-exit-{self.index}"
 
@@ -370,7 +372,7 @@ class Action(NodeMixin):
     index: int
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def id(self):
         return f"{self.scene.id}-{self.persona.id}-action-{self.index}"
 
@@ -396,7 +398,7 @@ class Direction(NodeMixin):
     stop: bool = True
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def id(self):
         return f"{self.scene.id}-direction-{self.index}"
 
@@ -423,7 +425,7 @@ class Dialogue(NodeMixin):
     linepart: int = 0
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def id(self):
         return f"{self.persona.id}-dialogue-{self.lineno}"
 
@@ -450,13 +452,13 @@ class Speech(NodeMixin):
     index: int
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def linerange(self) -> Tuple[int, int]:
         linenos = sorted([x.lineno for x in self.speech if hasattr(x, "lineno")])
         return linenos[0], linenos[-1]
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def num_lines(self) -> int:
         x, y = self.linerange
         # line count starts at 1
@@ -464,7 +466,7 @@ class Speech(NodeMixin):
         return y - (x - 1)
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def id(self) -> str:
         return f"{self.scene.id}-{self.persona.id}-speech-{'-'.join(map(str, self.linerange))}"
 
@@ -499,7 +501,7 @@ class NodeTree(NodeMixin):
     personae: Tuple[Persona] = dataclasses.field(default_factory=tuple)
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def cols(self) -> Tuple[Any]:
         return tuple(
             getattr(x, "node", x).col
@@ -524,7 +526,7 @@ class MetaData(NodeMixin):
     editors: Tuple[str] = dataclasses.field(default_factory=tuple)
     tags: Tuple[str] = dataclasses.field(default_factory=tuple)
 
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def asmeta(self):
         dikt = {
             "creator": [{"type": "author", "text": self.author}],
@@ -560,7 +562,7 @@ class Play(NodeMixin):
     meta: MetaData = dataclasses.field(default_factory=MetaData)
 
     @property
-    @func.lru_cache(1)
+    @functools.lru_cache(1)
     def id(self) -> str:
         return inflection.parameterize(f"{self.meta.title}-play")
 
@@ -609,11 +611,11 @@ class GenericNode(NodeMixin):
     scene: Any = None
 
     @classmethod
-    @func.lru_cache(maxsize=1)
+    @functools.lru_cache(maxsize=1)
     def sig(cls) -> inspect.Signature:
         return inspect.signature(cls)
 
-    @func.lru_cache(maxsize=1)
+    @functools.lru_cache(maxsize=None)
     def resolve(self) -> ResolvedNode:
         """Resolve a GenericNode into a typed, "resolved" Node.
 
@@ -631,12 +633,12 @@ class GenericNode(NodeMixin):
             )
 
     @property
-    @func.lru_cache(maxsize=1)
+    @functools.lru_cache(maxsize=1)
     def pieces(self) -> List[str]:
         return self.match_text.split()
 
     @property
-    @func.lru_cache(maxsize=1)
+    @functools.lru_cache(maxsize=1)
     def match_text(self) -> str:
         return self.match[self.type] if self.match and self.pattern else self.text
 
@@ -666,7 +668,29 @@ class InputType(str, enum.Enum):
     DATA = "data"
 
 
-class Index(UserList):
+_INDEX_CACHE = dict()
+
+
+def _memoize_method(call: Callable) -> Callable:
+
+    @functools.wraps(call)
+    def __memoize(self, *args, **kwargs):
+        global _INDEX_CACHE
+        key = hash(tuple(args) + tuple(kwargs.items()))
+        if key not in _INDEX_CACHE:
+            val = call(self, *args, **kwargs)
+            _INDEX_CACHE[key] = val
+        return _INDEX_CACHE[key]
+
+    return __memoize
+
+
+def reset_index_cache():
+    global _INDEX_CACHE
+    _INDEX_CACHE.clear()
+
+
+class Index(Deque):
     """An ordered collection of nodes in a script.
 
     ``Parser.parse`` builds a list of :class:`GenericNode`, which can be resolved into the specific
@@ -674,9 +698,9 @@ class Index(UserList):
     """
 
     def __init__(self, initlist: Sequence["GenericNode"] = None):
-        initlist = initlist or None
+        initlist = initlist or []
         super().__init__(initlist)
-        self.generic = []
+        self.generic = deque()
 
     def __setitem__(self, key, value: GenericNode):
         if isinstance(value, GenericNode):
@@ -690,6 +714,13 @@ class Index(UserList):
             item = item.resolve()
         super().append(item)
 
+    def appendleft(self, item: GenericNode) -> None:
+        if isinstance(item, GenericNode):
+            self.generic.appendleft(item)
+            item = item.resolve()
+        super().appendleft(item)
+
+    @_memoize_method
     def get(
         self, node_type: Type, with_loc: bool = True
     ) -> Tuple[Union[Any, Tuple[int, Any]], ...]:
@@ -753,14 +784,14 @@ class Index(UserList):
         )
         return set(x for x in self.get(Direction, False) if x not in speech_directions)
 
-    def get_scene_trees(self) -> List["NodeTree"]:
+    def get_scene_trees(self, sort: bool = True) -> List["NodeTree"]:
         speeches = set(self.get_speeches())
         directions = self.filter_directions(speeches)
         entrances = set(self.get(Entrance, False))
         exits = set(self.get(Entrance, False))
         children = speeches | directions | entrances | exits
         scenes = []
-        for node in (x for x in self if type(x) in {Scene, Epilogue, Prologue}):
+        for node in set(self.get(Scene, False)) | set(self.get(Prologue, False)) | set(self.get(Epilogue, False)):
             child_nodes = set(x for x in children if x.scene == node)
             personae = set(x.persona for x in child_nodes if x.type == NodeType.SPCH)
             tree = NodeTree(
@@ -770,18 +801,22 @@ class Index(UserList):
             )
             scenes.append(tree)
             children -= child_nodes
-        scenes.sort(key=self.node_sort)
+        if sort:
+            scenes.sort(key=self.node_sort)
         return scenes
 
     def get_act_trees(self, scenes: List["NodeTree"]) -> List["NodeTree"]:
-        acts = [x for x in scenes if not x.node.act]
+        scenes = set(scenes)
+        acts = [x for x in scenes if x.node.act is None]
+        scenes -= set(acts)
         intermission = self.intermission()
         intermission = intermission[-1] if intermission else None
         for ix, act in self.acts():
-            children = [x for x in scenes if x.node.act == act]
+            children = set(x for x in scenes if x.node.act and x.node.act.num == act.num)
+            scenes -= children
             # Add the intermission if there is one.
             if intermission and intermission.act == act:
-                children.append(intermission)
+                children.add(intermission)
             nodes = tuple(sorted(children, key=self.node_sort))
             acts.append(NodeTree(act, nodes))
         acts.sort(key=self.node_sort)
@@ -793,16 +828,20 @@ class Index(UserList):
         # Build the Play-level trees
         acts = self.get_act_trees(scenes)
         # Put it all together
-        return Play(tuple(acts), tuple(self.personae()), MetaData(title))
+        play = Play(tuple(acts), tuple(self.personae()), MetaData(title=title))
+        return play
 
     @staticmethod
-    @func.lru_cache(typed=True)
+    @functools.lru_cache(maxsize=None)
     def node_sort(node):
         return getattr(node, "node", node).index
 
 
+_RESOLVABLE = set(GenericNode.__resolver_map__.values())
+
+
 def node_coercer(value: Any) -> Optional[ResolvedNode]:
-    if type(value) in set(GenericNode.__resolver_map__.values()) or value is None:
+    if type(value) in _RESOLVABLE or value is None:
         return value
     if isinstance(value, GenericNode):
         return value.resolve()
@@ -814,11 +853,11 @@ def node_coercer(value: Any) -> Optional[ResolvedNode]:
     return handler(**value)
 
 
-_candidates = set(GenericNode.__resolver_map__.values()).union(ChildNode.__args__)
+_candidates = _RESOLVABLE.union(ChildNode.__args__)
 _candidates.add(NodeTree)
 
 
-@func.lru_cache(maxsize=None, typed=True)
+@functools.lru_cache(maxsize=None)
 def isnodetype(obj: Type) -> bool:
     is_valid = (
         obj is ResolvedNode

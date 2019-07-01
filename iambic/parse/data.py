@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+import functools
 import ujson as json
-from cachetools import func
 
 from iambic import ast
 
@@ -9,7 +9,7 @@ from iambic import ast
 class Parser:
     __resolver_map__ = ast.GenericNode.__resolver_map__
 
-    @func.lru_cache(typed=True)
+    @functools.lru_cache()
     def parse(self, data: str) -> ast.ResolvedNode:
         data = json.loads(data) if isinstance(data, str) else data
         handler = self.__resolver_map__[data.pop("type")]

@@ -11,7 +11,7 @@ def render_json(tree: ast.Play) -> str:
 
     Parameters
     ----------
-    tree :
-        The play tree, as loaded via :func:`~iambic.parser.parse` or :func:`~iambic.loader.load`
+    tree
+        The play tree, as loaded via :func:`iambic.parse.text` or :func:`iambic.parse.data`
     """
     return tree.json()
