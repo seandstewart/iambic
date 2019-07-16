@@ -10,18 +10,7 @@ import ujson as json
 
 
 dataclass_sig = inspect.signature(dataclasses.dataclass)
-
-
-def astuple(self) -> tuple:
-    return dataclasses.astuple(self)
-
-
-def replace(self, **changes):
-    return dataclasses.replace(self, **changes)
-
-
-def fields(self):
-    return dataclasses.fields(self)
+typicklass_sig = inspect.signature(typic.klass)
 
 
 def dataschema(_cls=None, **kwargs) -> Type:
@@ -34,30 +23,35 @@ def dataschema(_cls=None, **kwargs) -> Type:
     add_weakref : bool, default False
         This is passed to :py:func:`dataslots.with_slots` and will be ignored if ``slots=False``
     frozen : bool, default False
-        This is passed to :py:func:`pydantic.dataclasses.dataclass`
+        This is passed to :py:func:`dataclasses.dataclass`
     init : bool, default True
-        This is passed to :py:func:`pydantic.dataclasses.dataclass`
+        This is passed to :py:func:`dataclasses.dataclass`
     repr : bool, default True
-        This is passed to :py:func:`pydantic.dataclasses.dataclass`
+        This is passed to :py:func:`dataclasses.dataclass`
     eq : bool, default True
-        This is passed to :py:func:`pydantic.dataclasses.dataclass`
+        This is passed to :py:func:`dataclasses.dataclass`
     order : bool, default False
-        This is passed to :py:func:`pydantic.dataclasses.dataclass`
+        This is passed to :py:func:`dataclasses.dataclass`
     unsafe_hash : bool, default False
-        This is passed to :py:func:`pydantic.dataclasses.dataclass`
+        This is passed to :py:func:`dataclasses.dataclass`
     """
 
     def wrap_cls(_cls):
         dcls = dataclasses.dataclass(
             _cls, **{x: y for x, y in kwargs.items() if x in dataclass_sig.parameters}
         )
-        dcls.astuple = astuple
-        dcls.replace = replace
-        dcls.replace.__annotations__["return"] = dcls
+        dcls.astuple = dataclasses.astuple
+        dcls.replace = dataclasses.replace
         dcls.json = lambda cls: json.dumps(cls.asdict(), indent=2)
         dcls.json.__name__ = "json"
         dcls.json.__qualname__ = f"{dcls.__name__}.json"
-        cls_ = typic.al(dataslots.with_slots(dcls))
+        cls_ = typic.al(
+            dataslots.with_slots(
+                dcls,
+                add_dict=kwargs.pop('add_dict', False),
+                add_weakref=kwargs.pop('add_weakref', False)
+            ),
+            delay=kwargs.pop('delay', False))
         cls_.__signature__ = inspect.signature(dcls)
         cls_.__annotations__ = dcls.__annotations__
         cls_.__qualname__ = dcls.__qualname__

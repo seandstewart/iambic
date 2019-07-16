@@ -55,7 +55,7 @@ INSTALL_REQUIRES = (
     "ujson",
     "yattag",
     "tablib",
-    "typical",
+    "typical>=1.10.1",
 )
 TESTS_REQUIRE = ("pytest",)
 
@@ -112,7 +112,7 @@ setup(
     long_description=README,
     long_description_content_type="text/markdown",
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Natural Language :: English",
         "License :: OSI Approved :: MIT License",

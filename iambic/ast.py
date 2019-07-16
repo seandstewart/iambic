@@ -27,7 +27,7 @@ from typing import (
 
 import inflection
 import typic
-from cachetools import func, cached, LRUCache, LFUCache
+from cachetools import cached, LFUCache
 from cachetools.keys import hashkey
 
 from iambic import schema, roman
@@ -142,7 +142,7 @@ class NodeMixin:
     asdict = asdict
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(frozen=True, delay=True)
 class Act(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Act"]
@@ -169,7 +169,7 @@ class Act(NodeMixin):
         return cls(index=node.index, text=node.match_text, num=num)
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(frozen=True, delay=True)
 class Scene(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Scene"]
@@ -203,7 +203,7 @@ class Scene(NodeMixin):
         )
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(frozen=True, delay=True)
 class Prologue(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Prologue"]
@@ -248,7 +248,7 @@ class Epilogue(Prologue):
         return f"{f'{self.act.col}.' if self.act else ''}E"
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(frozen=True, delay=True)
 class Intermission(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Intermission"]
@@ -286,7 +286,7 @@ def persona_cache_key(
     return hashkey(name, text, short)
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(frozen=True, delay=True)
 class Persona(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Persona"]
@@ -323,7 +323,7 @@ class Persona(NodeMixin):
         return cls(index=node.index, text=node.match_text, name=node.match_text.title())
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(frozen=True, delay=True)
 class Entrance(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Entrance"]
@@ -332,7 +332,7 @@ class Entrance(NodeMixin):
     index: int
     text: str
     scene: Union[Scene, Prologue, Epilogue]
-    personae: Optional[Tuple[Persona]] = dataclasses.field(default_factory=tuple)
+    personae: Tuple[Persona] = dataclasses.field(default_factory=tuple)
 
     @property
     @functools.lru_cache(1)
@@ -360,7 +360,7 @@ class Exit(Entrance):
         return f"{self.scene.id}-exit-{self.index}"
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(frozen=True, delay=True)
 class Action(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Action"]
@@ -386,7 +386,7 @@ class Action(NodeMixin):
         )
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(frozen=True, delay=True)
 class Direction(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Direction"]
@@ -411,7 +411,7 @@ class Direction(NodeMixin):
         )
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(frozen=True, delay=True)
 class Dialogue(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Dialogue"]
@@ -440,7 +440,7 @@ class Dialogue(NodeMixin):
         )
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(frozen=True, delay=True)
 class Speech(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Speech"]
@@ -487,10 +487,10 @@ ResolvedNode = Union[
 ]
 
 
-ChildNode = Union["NodeTree", ResolvedNode]
+ChildNode = ResolvedNode
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(frozen=True, delay=True)
 class NodeTree(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["NodeTree"]
@@ -510,7 +510,24 @@ class NodeTree(NodeMixin):
         )
 
 
-@schema.dataschema(frozen=True)
+ChildNode = Union[
+    Act,
+    Scene,
+    Prologue,
+    Epilogue,
+    Persona,
+    Entrance,
+    Exit,
+    Action,
+    Direction,
+    Dialogue,
+    Speech,
+    Intermission,
+    NodeTree
+]
+
+
+@schema.dataschema(frozen=True, delay=True)
 class MetaData(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["MetaData"]
@@ -551,7 +568,7 @@ class MetaData(NodeMixin):
         return dikt
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(frozen=True, delay=True)
 class Play(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Play"]
@@ -567,7 +584,7 @@ class Play(NodeMixin):
         return inflection.parameterize(f"{self.meta.title}-play")
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(frozen=True, delay=True)
 class GenericNode(NodeMixin):
     """The root-object of a script.
 
@@ -872,3 +889,4 @@ def isnodetype(obj: Type) -> bool:
 
 
 typic.register(coercer=node_coercer, check=isnodetype, check_origin=False)
+typic.resolve()
