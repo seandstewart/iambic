@@ -8,7 +8,7 @@ import sys
 import typing
 from shutil import rmtree
 
-from setuptools import setup, Command
+from setuptools import setup, Command, find_packages
 
 
 @dataclasses.dataclass
@@ -103,7 +103,7 @@ class UploadCommand(Command):
 setup(
     name=ABOUT.title,
     version=ABOUT.version,
-    packages=[ABOUT.package],
+    packages=find_packages(exclude=("tests",)),
     url=ABOUT.url,
     license=ABOUT.license,
     author=ABOUT.author,
@@ -135,4 +135,5 @@ setup(
     cmdclass={"upload": UploadCommand},
     install_requires=INSTALL_REQUIRES,
     tests_require=TESTS_REQUIRE,
+    include_package_data=True,
 )
