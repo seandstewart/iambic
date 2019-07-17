@@ -52,15 +52,18 @@ class Tabulator:
         node_column: List[str],
         cline_column: List[int],
         char_index: Dict[str, int],
+        personae: Dict[str, ast.Persona],
     ):
         for child in scene.children:
             if isinstance(child, ast.Speech):
-                index = char_index[child.persona.name]
+                persona = personae[child.persona]
+                index = char_index[persona.name]
                 node_column[index] = Marker.SPEAK.value
                 cline_column[index] += child.num_lines
             elif isinstance(child, ast.Entrance):
                 for pers in child.personae:
-                    index = char_index[pers.name]
+                    persona = personae[pers]
+                    index = char_index[persona.name]
                     node_column[index] = Marker.PRES.value
 
     def tabulate(self, play: ast.Play) -> Table:
@@ -82,7 +85,7 @@ class Tabulator:
         table[Column.CLINE.value] = list(0 for _ in char_column)
         cline_column = table[Column.CLINE.value]
         char_index = {y: x for x, y in enumerate(char_column)}
-
+        personae = {x.id: x for x in play.personae}
         for act in play.children:
             # Epilogues and Prologues are shaped like Scenes
             # But can be top-level, like Acts.
@@ -100,6 +103,7 @@ class Tabulator:
                         node_column=table[node.col],
                         cline_column=cline_column,
                         char_index=char_index,
+                        personae=personae,
                     )
 
         return table

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 import enum
-from typing import Union
+from typing import Union, Mapping
 
 import inflection
 
@@ -53,7 +53,12 @@ class HTMLRenderer:
 
     tag = HTMLTag
 
-    def render_speech(self, speech: ast.Speech, doc: yattag.SimpleDoc):
+    def render_speech(
+        self,
+        speech: ast.Speech,
+        personae: Mapping[str, ast.Persona],
+        doc: yattag.SimpleDoc,
+    ):
         """Render a "speech" node.
 
         A :class:`ast.SpeechNode` is a container for all lines of dialogue, character action, or stage direction which
@@ -61,16 +66,19 @@ class HTMLRenderer:
 
         Parameters
         ----------
-        speech :
+        speech
             The speech node to render to html.
-        doc :
+        doc
             The document object which the spech will be rendered to.
+        personae
+            A mapping of :py:attr:`Persona.id` -> :py:class:`Persona`
         """
+        persona = personae[speech.persona]
         doc.line(
             self.tag.STR.value,
-            speech.persona.name,
-            klass=speech.persona.klass,
-            id=f"{speech.persona.id}-{speech.id}",
+            persona.name,
+            klass=persona.klass,
+            id=f"{persona.id}-{speech.id}",
         )
         doc.stag(self.tag.BR.value)
         last_line = None
@@ -92,17 +100,24 @@ class HTMLRenderer:
             last_line = line
 
     def render_scene(
-        self, scene: ast.NodeTree, doc: yattag.SimpleDoc, as_act: bool = False
+        self,
+        scene: ast.NodeTree,
+        doc: yattag.SimpleDoc,
+        personae: Mapping[str, ast.Persona],
+        *,
+        as_act: bool = False,
     ):
         """Render a "scene". This could be either a :class:`ast.NodeTree` or :class:`ast.Intermission`
 
         Parameters
         ----------
-        scene :
+        scene
             A child of the higher-level "act" -
             which could be a :class:`ast.Act`, :class:`ast.Epilogue`, or :class:`ast.Prologue`
-        doc :
+        doc
             The initialized document object.
+        personae
+            A mapping of :py:attr:`Persona.id` -> :py:class:`Persona`
         as_act : default False
             Optionally render this scene at the "act" level (:class:`HTMLTag.H1`)
         """
@@ -124,19 +139,20 @@ class HTMLRenderer:
                             doc.text(line.text)
                             doc.data(index=line.index)
                         continue
-                    self.render_speech(line, doc)
+                    self.render_speech(line, personae, doc)
 
     def render_play(self, tree: ast.Play) -> yattag.SimpleDoc:
         doc = yattag.SimpleDoc()
+        persona_map = {x.id: x for x in tree.personae}
         for act in tree.children:
             if isinstance(act.node, (ast.Epilogue, ast.Prologue)):
-                self.render_scene(act, doc, as_act=True)
+                self.render_scene(act, doc, persona_map, as_act=True)
                 continue
             with doc.tag(self.tag.H1.value, klass=act.node.klass, id=act.node.id):
                 doc.data(index=act.node.index)
                 doc.text(act.node.text)
             for scene in act.children:
-                self.render_scene(scene, doc)
+                self.render_scene(scene, doc, persona_map)
         return doc
 
     def render_toc(self, tree: ast.Play) -> yattag.SimpleDoc:

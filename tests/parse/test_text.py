@@ -86,7 +86,12 @@ generic_scene = ast.GenericNode("scene", "Scene II", 0, 0)
             ParserContext(generic_act, generic_act, generic_scene),
             _PreNode(ast.NodeType.DIAL, text=""),
             ast.GenericNode(
-                "dialogue", text="", index=0, lineno=0, linepart=0, scene=generic_scene
+                "dialogue",
+                text="",
+                index=0,
+                lineno=0,
+                linepart=0,
+                scene=generic_scene.resolve().id,
             ),
         ),
         (
@@ -98,7 +103,7 @@ generic_scene = ast.GenericNode("scene", "Scene II", 0, 0)
                 index=0,
                 lineno=0,
                 linepart=0,
-                parent=generic_act,
+                parent=generic_act.resolve().id,
             ),
         ),
     ],

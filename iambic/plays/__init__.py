@@ -15,9 +15,7 @@ class Corpus:
 
     @staticmethod
     def _get_names(path: pathlib.Path) -> Set[str]:
-        names = {
-            path.name,
-        }
+        names = {path.name}
         for child in path.iterdir():
             if child.suffix == ".md":
                 names.add(inflection.parameterize(child.stem))
@@ -38,12 +36,16 @@ class Corpus:
                 names = self._get_names(child)
                 if item in names or any(item in x for x in names):
                     for text in child.iterdir():
-                        if text.suffix.endswith('.md'):
+                        if text.suffix.endswith(".md"):
                             return text.read_text()
-        raise KeyError(f"Couldn't locate a play with key <{item}>. Available keys are: {tuple(seen)}")
+        raise KeyError(
+            f"Couldn't locate a play with key <{item}>. Available keys are: {tuple(seen)}"
+        )
 
     @functools.lru_cache(maxsize=128)
-    def get(self, item: str, default: str = None, *, parsed: bool = False, tree: bool = True) -> Optional[Union[str, ast.Play, ast.Index]]:
+    def get(
+        self, item: str, default: str = None, *, parsed: bool = False, tree: bool = True
+    ) -> Optional[Union[str, ast.Play, ast.Index]]:
         try:
             text = self[item]
             return parse.text(text, tree=tree) if parsed else text

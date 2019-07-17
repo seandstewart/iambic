@@ -48,10 +48,11 @@ def dataschema(_cls=None, **kwargs) -> Type:
         cls_ = typic.al(
             dataslots.with_slots(
                 dcls,
-                add_dict=kwargs.pop('add_dict', False),
-                add_weakref=kwargs.pop('add_weakref', False)
+                add_dict=kwargs.pop("add_dict", False),
+                add_weakref=kwargs.pop("add_weakref", False),
             ),
-            delay=kwargs.pop('delay', False))
+            delay=kwargs.pop("delay", False),
+        )
         cls_.__signature__ = inspect.signature(dcls)
         cls_.__annotations__ = dcls.__annotations__
         cls_.__qualname__ = dcls.__qualname__

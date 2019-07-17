@@ -13,11 +13,12 @@ from html2text import html2text
 from iambic.ast import (
     GenericNode,
     NodeType,
-    NodePattern,
-    NodeToken,
-    Index,
     Play,
     InputType,
+    ResolvedNode,
+    Index,
+    NodeToken,
+    NodePattern,
 )
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,17 @@ logger = logging.getLogger(__name__)
 @cachetools.func.lru_cache(maxsize=None, typed=True)
 def _cached_match(pattern: Pattern, value: str) -> Match:
     return pattern.fullmatch(value) or pattern.match(value)
+
+
+def _safe_resolve(
+    node: typing.Optional[GenericNode], *, attr: str = None
+) -> ResolvedNode:
+    if node:
+        resolved = node.resolve()
+        return getattr(resolved, attr, None) if attr else resolved
+
+
+_safe_id = functools.partial(_safe_resolve, attr="id")
 
 
 @dataclasses.dataclass
@@ -101,14 +113,14 @@ class Parser:
         """
         # determine the 'real parent' for this node
         # Set the current parent as the parent for this particular node.
-        kwargs = {"parent": ctx.parent}
+        kwargs = {"parent": _safe_id(ctx.parent)}
         # We associate dialogue and character actions to the character & scene.
         if node.type in {NodeType.DIAL, NodeType.ACTION}:
-            kwargs["parent"] = ctx.character
-            kwargs["scene"] = ctx.scene
+            kwargs["parent"] = _safe_id(ctx.character)
+            kwargs["scene"] = _safe_id(ctx.scene)
         # Intermissions can be associated to the act they occur within
         elif node.type == NodeType.INTER:
-            kwargs["parent"] = ctx.act
+            kwargs["parent"] = _safe_id(ctx.act)
 
         node = GenericNode(**dataclasses.asdict(node), **kwargs)
         ctx.index.append(node)
@@ -129,7 +141,7 @@ class Parser:
         """Check if the current node qualifies as a 'Parent Node'."""
         kwargs = dataclasses.asdict(node)
         if node.type != NodeType.ACT:
-            kwargs["parent"] = act
+            kwargs["parent"] = _safe_id(act)
         node = GenericNode(**kwargs)
         parent = node
         return parent, node
@@ -169,7 +181,7 @@ class Parser:
             ):
                 text = f"{prev.text.strip()} {node.text.strip()}"
                 match = prev.pattern.match(text)
-                ctx.index[-1] = prev.replace(text=text, match=match)
+                ctx.index[-1] = dataclasses.replace(prev, text=text, match=match)
                 append = False
         return append
 
@@ -191,9 +203,14 @@ class Parser:
             else InputType.MD
         )
 
-    @functools.lru_cache()
+    @functools.lru_cache(typed=True)
     def parse(
-        self, text: str, title: str = None, *, input_type: InputType = None, tree: bool = True
+        self,
+        text: str,
+        title: str = None,
+        *,
+        input_type: InputType = None,
+        tree: bool = True,
     ) -> Play:
         ctx = ParserContext()
         input_type = input_type or self.guess_formatting(text)
