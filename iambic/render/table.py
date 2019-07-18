@@ -87,13 +87,14 @@ class Tabulator:
         char_index = {y: x for x, y in enumerate(char_column)}
         personae = {x.id: x for x in play.personae}
         for act in play.children:
-            # Epilogues and Prologues are shaped like Scenes
-            # But can be top-level, like Acts.
-            children = (
-                [act]
-                if act.node.type in {ast.NodeType.EPIL, ast.NodeType.PROL}
-                else act.children
-            )
+            # Epilogues and Prologues can be shaped like Scenes or Acts.
+            # And can be top-level, like Acts.
+            children = act.children
+            if act.node.type in {
+                ast.NodeType.EPIL,
+                ast.NodeType.PROL,
+            } and not isinstance(children[0], ast.NodeTree):
+                children = [act]
             for scene in children:
                 node = scene.node if isinstance(scene, ast.NodeTree) else scene
                 table[node.col] = list(Marker.NONE.value for _ in char_column)

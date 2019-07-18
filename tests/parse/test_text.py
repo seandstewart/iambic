@@ -62,7 +62,7 @@ def test_text_match(value: str, expected: ast.NodeType):
 def test_locale_handler(ctx: ParserContext, node: _PreNode, expected_parent_text: str):
     ctx = parse.text.locale_handler(ctx, node)
     assert ctx.parent.text == expected_parent_text
-    ctx_node = getattr(ctx, node.type, ctx.scene)
+    ctx_node = getattr(ctx, node.type, ctx.act)
     assert ctx_node == ast.GenericNode(**dataclasses.asdict(node))
 
 

@@ -188,7 +188,11 @@ class Parser:
     def locale_handler(self, ctx: ParserContext, node: _PreNode) -> ParserContext:
         """The handler for locale-types, defined in :py:attr:`Parser.LOCALES`"""
         ctx.parent, node = self.check_parent(ctx.act, node)
+        last_type = ctx.index[-1].type if ctx.index else None
         if node.type == NodeType.ACT:
+            ctx.act = node
+        elif node.type in {NodeType.EPIL, NodeType.PROL} and last_type != NodeType.ACT:
+            ctx.scene = node
             ctx.act = node
         else:
             ctx.scene = node

@@ -131,31 +131,35 @@ class Index(Deque[ast.ResolvedNode]):
             personae = set(
                 x.persona for x in child_nodes if x.type == ast.NodeType.SPCH
             )
-            tree = ast.NodeTree(
-                node=node,
-                children=tuple(sorted(child_nodes, key=self.node_sort)),
-                personae=tuple(personae),
-            )
-            scenes.append(tree)
-            children -= child_nodes
+            if child_nodes:
+                tree = ast.NodeTree(
+                    node=node,
+                    children=tuple(sorted(child_nodes, key=self.node_sort)),
+                    personae=tuple(personae),
+                )
+                scenes.append(tree)
+                children -= child_nodes
         if sort:
             scenes.sort(key=self.node_sort)
         return scenes
 
     def get_act_trees(self, scenes: List[ast.NodeTree]) -> List[ast.NodeTree]:
         scenes = set(scenes)
-        acts = [x for x in scenes if x.node.act is None]
+        acts = {x for x in scenes if x.node.act is None}
         scenes -= set(acts)
         intermission = self.intermission()
-        for act in self.acts():
+        prols = tuple(x for x in self.prologues() if x.act is None)
+        epils = tuple(x for x in self.epilogues() if x.act is None)
+        for act in set(prols + self.acts() + epils):
             children = set(x for x in scenes if x.node.act == act.id)
-            scenes -= children
-            # Add the intermission if there is one.
-            if intermission and intermission.act == act.id:
-                children.add(intermission)
-            nodes = tuple(sorted(children, key=self.node_sort))
-            acts.append(ast.NodeTree(act, nodes))
-        acts.sort(key=self.node_sort)
+            if children:
+                scenes -= children
+                # Add the intermission if there is one.
+                if intermission and intermission.act == act.id:
+                    children.add(intermission)
+                nodes = tuple(sorted(children, key=self.node_sort))
+                acts.add(ast.NodeTree(act, nodes))
+        acts = list(sorted(acts, key=self.node_sort))
         return acts
 
     def to_tree(self, title: str = None) -> ast.Play:

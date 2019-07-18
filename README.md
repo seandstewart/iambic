@@ -59,7 +59,7 @@ A `Scene` will be always be nested under an act `Act`. A
 `Scene` contains speeches, dialogue, and actions.
 
 A `Prologue` or `Epilogue` may or may not be nested under an
-`Act`, but have the same internal structure as a `Scene`.
+`Act` and may or may not have the structure of a `Scene` or an `Act`.
 
 
 ### 2. Actions and Directions
