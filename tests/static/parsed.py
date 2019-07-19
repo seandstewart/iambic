@@ -231,10 +231,10 @@ PARSED = Play(
         ),
     ),
     personae=(
-        Persona(index=35, text="FOO", name="Foo", short=None),
+        Persona(index=2, text="FOO", name="Foo", short=None),
         Persona(index=4, text="A Bar", name="A Bar", short=None),
         Persona(index=6, text="Bar's Foo", name="Bar's Foo", short=None),
-        Persona(index=25, text="BAR", name="Bar", short=None),
+        Persona(index=12, text="BAR", name="Bar", short=None),
     ),
     meta=MetaData(),
 )

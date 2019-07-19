@@ -7,7 +7,6 @@ import typing
 from collections import defaultdict
 from typing import Pattern, Match
 
-import cachetools.func
 from html2text import html2text
 
 from iambic.ast import (
@@ -18,13 +17,14 @@ from iambic.ast import (
     ResolvedNode,
     Index,
     NodeToken,
-    NodePattern,
+    NODE_PATTERN,
 )
+from iambic.schema import frozendict
 
 logger = logging.getLogger(__name__)
 
 
-@cachetools.func.lru_cache(maxsize=None, typed=True)
+@functools.lru_cache(maxsize=None, typed=True)
 def _cached_match(pattern: Pattern, value: str) -> Match:
     return pattern.fullmatch(value) or pattern.match(value)
 
@@ -43,12 +43,22 @@ _safe_id = functools.partial(_safe_resolve, attr="id")
 @dataclasses.dataclass
 class _PreNode:
     type: NodeType
-    pattern: Pattern = None
-    match: Match = None
+    match: typing.Dict[str, str] = dataclasses.field(default_factory=dict)
     text: str = None
     index: int = 0
     lineno: int = 0
     linepart: int = 0
+
+    def to_generic(self, **kwargs) -> GenericNode:
+        return GenericNode(
+            type=self.type,
+            text=self.text,
+            index=self.index,
+            lineno=self.lineno,
+            linepart=self.linepart,
+            match=frozendict(self.match),
+            **kwargs,
+        )
 
 
 @dataclasses.dataclass
@@ -69,6 +79,7 @@ class Parser:
     """
 
     LOCALES = frozenset((NodeType.ACT, NodeType.PROL, NodeType.EPIL, NodeType.SCENE))
+    _ACTION_BOOKENDS = frozenset(("[", "]"))
 
     def __init__(self):
         self.__parser_map = defaultdict(lambda: self.default_handler)
@@ -77,29 +88,32 @@ class Parser:
             self.__parser_map[typ] = self.locale_handler
         self.__parser_map[NodeType.PERS] = self.persona_handler
 
-    @staticmethod
-    @cachetools.func.lru_cache(maxsize=None, typed=True)
-    def match(line: str, index: int) -> _PreNode:
+    @classmethod
+    @functools.lru_cache(maxsize=None, typed=True)
+    def match(cls, line: str, index: int) -> _PreNode:
         """Take an individual line from a body of text and determine which :py:class:`NodeType` it is."""
-        node = _PreNode(
-            type=NodeType.ACT,
-            pattern=NodePattern.ACT.value,
-            match=NodePattern.ACT.value.match(line),
-            text=line,
-            index=index,
+        match = NODE_PATTERN.match(line)
+        match_dict = (
+            {x: y for x, y in match.groupdict().items() if y is not None}
+            if match
+            else {}
         )
-        for node_type in NodeType:
-            pattern = NodePattern.get(node_type)
-            match = _cached_match(pattern, line)
-            if match:
-                if node_type in {NodeType.ACTION, NodeType.DIR}:
-                    match_dict = match.groupdict()
-                    if match_dict.get("start") or match_dict.get("end"):
-                        node.pattern, node.match, node.type = pattern, match, node_type
-                        break
-                else:
-                    node.pattern, node.match, node.type = pattern, match, node_type
+        node = _PreNode(
+            type=NodeType.DIAL, match={NodeType.DIAL: line}, text=line, index=index
+        )
+        for node_type in {*NodeType} & match_dict.keys():
+            node_type = NodeType(node_type)
+            if node_type == NodeType.DIR:
+                bookend = match_dict.get("start") or match_dict.get("end")
+                if bookend:
+                    if cls._ACTION_BOOKENDS & {*bookend}:
+                        node_type = NodeType.ACTION
+                        match_dict[NodeType.ACTION] = match_dict.pop(NodeType.DIR)
+                    node.match, node.type = match_dict, node_type
                     break
+            else:
+                node.match, node.type = match_dict, node_type
+                break
 
         return node
 
@@ -122,14 +136,17 @@ class Parser:
         elif node.type == NodeType.INTER:
             kwargs["parent"] = _safe_id(ctx.act)
 
-        node = GenericNode(**dataclasses.asdict(node), **kwargs)
+        node = node.to_generic(**kwargs)
         ctx.index.append(node)
         return ctx
 
     @staticmethod
     def persona_handler(ctx: ParserContext, node: _PreNode) -> ParserContext:
         """The handler for :py:class:`NodeType.PERS`"""
-        node = GenericNode(**dataclasses.asdict(node))
+        node = node.to_generic()
+        resolved = ctx.index[node]
+        if resolved:
+            node = dataclasses.replace(node, index=resolved.index)
         ctx.character = node
         ctx.index.append(node)
         return ctx
@@ -139,10 +156,10 @@ class Parser:
         act: typing.Optional[GenericNode], node: _PreNode
     ) -> typing.Tuple[GenericNode, GenericNode]:
         """Check if the current node qualifies as a 'Parent Node'."""
-        kwargs = dataclasses.asdict(node)
+        kwargs = {}
         if node.type != NodeType.ACT:
             kwargs["parent"] = _safe_id(act)
-        node = GenericNode(**kwargs)
+        node = node.to_generic(**kwargs)
         parent = node
         return parent, node
 
@@ -166,8 +183,8 @@ class Parser:
             if not continued:
                 ctx.linepart = 0
 
-    @staticmethod
-    def check_direction(ctx: ParserContext, node: _PreNode) -> bool:
+    @classmethod
+    def check_direction(cls, ctx: ParserContext, node: _PreNode) -> bool:
         """Check that a given node is not actually within a stage-direction/action/enter/exit context."""
         append = True
         if ctx.index:
@@ -177,11 +194,13 @@ class Parser:
                 prev.type
                 in {NodeType.DIR, NodeType.ACTION, NodeType.EXIT, NodeType.ENTER}
                 and node.type in {NodeType.DIAL, prev.type}
-                and not prev.match.groupdict().get("end")
+                and not prev.match.get("end")
             ):
                 text = f"{prev.text.strip()} {node.text.strip()}"
-                match = prev.pattern.match(text)
-                ctx.index[-1] = dataclasses.replace(prev, text=text, match=match)
+                node = cls.match(text, prev.index)
+                ctx.index[-1] = dataclasses.replace(
+                    prev, match=frozendict(node.match), text=text
+                )
                 append = False
         return append
 

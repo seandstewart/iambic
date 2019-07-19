@@ -338,7 +338,7 @@
   },
   "personae": [
     {
-      "index": 35,
+      "index": 2,
       "name": "Foo",
       "short": null,
       "text": "FOO",
@@ -359,7 +359,7 @@
       "type": "persona"
     },
     {
-      "index": 25,
+      "index": 12,
       "name": "Bar",
       "short": null,
       "text": "BAR",

@@ -3,23 +3,10 @@
 import dataclasses
 import functools
 import inspect
-from typing import (
-    ClassVar,
-    Optional,
-    Union,
-    Tuple,
-    Any,
-    Mapping,
-    Type,
-    Pattern,
-    Match,
-    List,
-)
+from typing import ClassVar, Optional, Union, Tuple, Any, Mapping, Type, Match, List
 
 import inflection
 import typic
-from cachetools import cached, LFUCache
-from cachetools.keys import hashkey
 
 from iambic import schema, roman
 from iambic.schema import frozendict
@@ -97,7 +84,11 @@ class Scene(NodeMixin):
     @property
     @functools.lru_cache(1)
     def col(self) -> str:
-        return f"{self.act.split('-')[-1].upper()}.{roman.numeral(self.num).lower()}"
+        if self.act in {NodeType.PROL, NodeType.EPIL}:
+            pre = self.act[0].upper()
+        else:
+            pre = self.act.split("-")[-1].upper()
+        return f"{pre}.{roman.numeral(self.num).lower()}"
 
     @classmethod
     def from_node(cls, node: "GenericNode") -> "Scene":
@@ -184,17 +175,6 @@ class Intermission(NodeMixin):
         return "INT"
 
 
-def persona_cache_key(
-    persona: "Persona",
-    index: int = None,
-    name: str = None,
-    text: Union["GenericNode", str] = None,
-    short: str = None,
-):
-    text = text.match_text if isinstance(text, GenericNode) else text
-    return hashkey(name, text, short)
-
-
 @schema.dataschema(frozen=True)
 class Persona(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
@@ -205,17 +185,6 @@ class Persona(NodeMixin):
     text: str
     name: str
     short: str = None
-
-    # Singleton pattern utilizing LRU cache
-    @cached(cache=LFUCache(5000), key=persona_cache_key)
-    def __new__(
-        cls,
-        index: int = None,
-        name: str = None,
-        text: Union["GenericNode", str] = None,
-        short: str = None,
-    ):
-        return super(type(cls), cls).__new__(cls)
 
     def __eq__(self, other) -> bool:
         return other.name == self.name if hasattr(other, "name") else False
@@ -413,6 +382,11 @@ class NodeTree(NodeMixin):
             if isinstance(x, (NodeTree, Prologue))
         )
 
+    @property
+    @functools.lru_cache(1)
+    def id(self) -> str:
+        return f"{self.node.id}-tree"
+
 
 ChildNode = Union[
     Act,
@@ -488,7 +462,7 @@ class Play(NodeMixin):
         return inflection.parameterize(f"{self.meta.title}-play")
 
 
-@schema.dataschema(frozen=True)
+@dataclasses.dataclass(frozen=True)
 class GenericNode(NodeMixin):
     """The root-object of a script.
 
@@ -525,11 +499,16 @@ class GenericNode(NodeMixin):
     # If reading from JSON, we don't have/need this,
     # it will be provided inherently by the data-structure
     # on resolution-time.
-    pattern: Pattern = None
-    match: Match = None
+    match: frozendict = dataclasses.field(default_factory=frozendict)
     parent: str = None
     act: str = None
     scene: str = None
+
+    @classmethod
+    @functools.lru_cache(maxsize=None)
+    def resolvable(cls, obj: Type) -> bool:
+        values = cls.__resolver_map__.values()
+        return obj in values
 
     @classmethod
     @functools.lru_cache(maxsize=1)
@@ -561,7 +540,7 @@ class GenericNode(NodeMixin):
     @property
     @functools.lru_cache(maxsize=1)
     def match_text(self) -> str:
-        return self.match[self.type] if self.match and self.pattern else self.text
+        return self.match[self.type] if self.match else self.text
 
 
 _RESOLVABLE = set(GenericNode.__resolver_map__.values())

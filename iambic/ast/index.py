@@ -13,6 +13,7 @@ from typing import (
     Optional,
     List,
     Set,
+    Union,
 )
 
 
@@ -42,6 +43,18 @@ class Index(Deque[ast.ResolvedNode]):
             value = value.resolve()
         self.__type_map[value.type][value.id] = value
         super().__setitem__(key, value)
+
+    def __getitem__(
+        self, item: Union[ast.NodeType, ast.ResolvedNode, ast.GenericNode, int, str]
+    ):
+        if isinstance(item, int):
+            return super().__getitem__(item)
+        if isinstance(item, ast.NodeType):
+            return self.__type_map[item]
+        if isinstance(item, ast.GenericNode):
+            item = item.resolve()
+        if ast.GenericNode.resolvable(type(item)):
+            return self.__type_map[item.type].get(item.id)
 
     def append(self, item: ast.GenericNode) -> None:
         if isinstance(item, ast.GenericNode):
@@ -104,7 +117,7 @@ class Index(Deque[ast.ResolvedNode]):
                             )
                         )
                     persona, scene, speech = None, node, []
-            elif isinstance(node, (ast.Dialogue, ast.Action, ast.Direction)):
+            elif type(node) in {ast.Dialogue, ast.Action, ast.Direction}:
                 speech.append(node)
 
         if persona and scene and speech:

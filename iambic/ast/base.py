@@ -5,7 +5,7 @@ import functools
 import inspect
 import ujson as json
 import re
-from typing import Pattern, Mapping, Collection
+from typing import Mapping, Collection
 
 from iambic import schema
 
@@ -14,9 +14,9 @@ __all__ = (
     "NodeType",
     "NodeToken",
     "NodeMixin",
-    "NodePattern",
     "DEFINITIONS",
     "jsonify",
+    "NODE_PATTERN",
 )
 
 
@@ -47,48 +47,38 @@ class NodeToken(str, enum.Enum):
     JOIN2 = "..."
 
 
-class NodePattern(enum.Enum):
-    """An Enumeration of the regex patterns matching the types of nodes.
-
-    Note
-    ----
-    Order is important!
-    """
-
-    ACT = re.compile(r"^#+ (?P<act>(ACT)\s([IVX]+|\d+))", re.I)
-    SCENE = re.compile(r"^#+ (?P<scene>SCENE\s([IVX]+|\d+)).*", re.I)
-    PROL = re.compile(r"^#+ (?P<prologue>PROLOGUE).*", re.I)
-    EPIL = re.compile(r"^#+ (?P<epilogue>EPILOGUE).*", re.I)
-    INTER = re.compile(r"^#+ (?P<intermission>(INTERMISSION)).*", re.I)
-    PERS = re.compile(
-        r"[*_]{2}(?P<persona>(([A-Z][a-zA-Z'’]*\W{0,2}([a-z]+)?\s?)+([A-Z]|\d)*))[*_]{2}"
+NODE_PATTERN = re.compile(
+    r"""
+    (
+        # Locales: Act, Scene, Prologue, Epilogue, Intermission
+        ^\#+\s(?P<act>(ACT)\s([IVX]+|\d+))              |
+        ^\#+\s(?P<scene>SCENE\s([IVX]+|\d+)).*          |
+        ^\#+\s(?P<prologue>PROLOGUE).*                  |
+        ^\#+\s(?P<epilogue>EPILOGUE).*                  |
+        ^\#+\s(?P<intermission>(INTERMISSION)).*        |
+        # Persona
+        [*_]{2}(?P<persona>(
+            ([A-Z][a-zA-Z'’]*\W{0,2}([a-z]+)?\s?
+        )+([A-Z]|\d)*))[*_]{2}                          |
+        # Enter/Exit/Action/Direction
+        (
+            (?P<start>^[_*]\[?)?
+                (
+                    (
+                        (?P<entrance>(enter)((?![_*\[\]]).)*)|(?P<exit>(exeunt|exit)((?![_*\[\]]).)*)
+                    ) 
+                    |
+                    (?P<direction>((?![_*\[\]]).)+)
+                )
+                
+            (?P<end>\]?[_*])?\s{0,2}
+        )                                               |
+        # Dialogue (catch-all)
+        (?P<dialogue>(^.+))
     )
-    ENTER = re.compile(
-        r"(?P<start>^[_*])?(?P<entrance>(enter)((?![_*]).)*)(?P<end>[_*])?\s{0,2}",
-        (re.I | re.M),
-    )
-    EXIT = re.compile(
-        r"(?P<start>^[_*])?(?P<exit>(exeunt|exit)((?![_*]).)*)(?P<end>[_*])?\s{0,2}",
-        (re.I | re.M),
-    )
-    ACTION = re.compile(
-        r"(?P<start>^[_*]\[)?(?P<action>((?!\][_*]).)*)(?P<end>\][_*])?\s{0,2}",
-        (re.I | re.M),
-    )
-    DIR = re.compile(
-        r"(?P<start>^[_*])?(?P<direction>((?![_*]).)*)(?P<end>[_*])?\s{0,2}",
-        (re.I | re.M),
-    )
-    DIAL = re.compile(r"(?P<dialogue>(^.+))")
-
-    @classmethod
-    @functools.lru_cache(maxsize=len(list(NodeType)))
-    def get(cls, node: NodeType) -> Pattern:
-        """Get the pattern matching this node-type."""
-        for pattern in cls:
-            if pattern.name == node.name:
-                return pattern.value
-        raise TypeError(f"Unrecognized value for parameter node: {node}")
+    """,
+    re.VERBOSE | re.IGNORECASE | re.MULTILINE,
+)
 
 
 def asdict(obj):

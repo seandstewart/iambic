@@ -17,6 +17,7 @@ class Column(str, enum.Enum):
     """Predefined column names"""
 
     CHAR = "Dramatis Personae"
+    APP = "First Appearance"
     CLINE = "Lines"
     PLINE = "Player Lines"
     PLAYR = "Player"
@@ -81,6 +82,7 @@ class Tabulator:
         """
         table = dict()
         table[Column.CHAR.value] = list(x.name for x in play.personae)
+        table[Column.APP.value] = list(x.index for x in play.personae)
         char_column = table[Column.CHAR.value]
         table[Column.CLINE.value] = list(0 for _ in char_column)
         cline_column = table[Column.CLINE.value]

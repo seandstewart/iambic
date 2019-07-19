@@ -50,8 +50,6 @@ INSTALL_REQUIRES = (
     "fastjsonschema",
     "html2text",
     "inflection",
-    "inflection",
-    "cachetools",
     "ujson",
     "yattag",
     "tablib",

@@ -567,7 +567,7 @@ But if it were, doubt not her care should be
 To comb your noddle with a three-legg'd stool  
 And paint your face and use you like a fool.  
 
-**HORTENSIA**  
+**HORTENSIO**  
 From all such devils, good Lord deliver us!  
 
 **GREMIO**  

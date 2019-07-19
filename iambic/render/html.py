@@ -136,7 +136,11 @@ class HTMLRenderer:
                 with doc.tag(self.tag.P.value, klass=line.klass, id=line.id):
                     if type(line) in {ast.Direction, ast.Entrance, ast.Exit}:
                         with doc.tag(self.tag.EM.value):
-                            doc.text(line.text)
+                            doc.text(
+                                line.action
+                                if isinstance(line, ast.Direction)
+                                else line.text
+                            )
                             doc.data(index=line.index)
                         continue
                     self.render_speech(line, personae, doc)

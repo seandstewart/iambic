@@ -7,6 +7,7 @@ import pytest
 
 from iambic import ast, parse
 from iambic.parse.text import ParserContext, _PreNode
+from iambic.schema import frozendict
 
 
 @pytest.mark.parametrize(
@@ -72,7 +73,7 @@ def test_locale_handler(ctx: ParserContext, node: _PreNode, expected_parent_text
 )
 def test_persona_handler(ctx: ParserContext, node: _PreNode):
     ctx = parse.text.persona_handler(ctx, node)
-    assert ctx.character == ast.GenericNode(**dataclasses.asdict(node))
+    assert ctx.character == node.to_generic()
 
 
 generic_act = ast.GenericNode("act", "Act I", 0, 0)
@@ -143,8 +144,7 @@ def test_check_direction():
             type="direction",
             text="_Foo",
             index=0,
-            pattern=ast.NodePattern.DIR.value,
-            match=ast.NodePattern.DIR.value.match("_Foo"),
+            match=frozendict({"start": "_", "direction": "Foo"}),
         )
     )
     node = _PreNode(type=ast.NodeType.DIAL, text="foo")

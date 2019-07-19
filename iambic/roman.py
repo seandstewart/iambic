@@ -4,8 +4,6 @@ import enum
 import functools
 import re
 
-import cachetools.func
-
 NUMERAL_PATTERN = re.compile(
     """
     ^                   # beginning of string
@@ -39,7 +37,7 @@ class RomanNumeral(int, enum.Enum):
     I = 1
 
     @classmethod
-    @cachetools.func.lru_cache(maxsize=5000)
+    @functools.lru_cache(maxsize=5000)
     def from_number(cls, num: int) -> str:
         """Get a Roman Numeral Notation for a given integer.
 
