@@ -3,7 +3,7 @@
 import dataclasses
 import functools
 import inspect
-from typing import ClassVar, Optional, Union, Tuple, Any, Mapping, Type, Match, List
+from typing import ClassVar, Optional, Union, Tuple, Any, Mapping, Type, List
 
 import inflection
 import typic
@@ -37,7 +37,7 @@ __all__ = (
 )
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(unsafe_hash=True)
 class Act(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Act"]
@@ -64,7 +64,7 @@ class Act(NodeMixin):
         return cls(index=node.index, text=node.match_text, num=num)
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(unsafe_hash=True)
 class Scene(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Scene"]
@@ -102,7 +102,7 @@ class Scene(NodeMixin):
         )
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(unsafe_hash=True)
 class Prologue(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Prologue"]
@@ -150,7 +150,7 @@ class Epilogue(Prologue):
         return f"{pre}E"
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(unsafe_hash=True)
 class Intermission(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Intermission"]
@@ -175,7 +175,7 @@ class Intermission(NodeMixin):
         return "INT"
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(unsafe_hash=True)
 class Persona(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Persona"]
@@ -203,7 +203,7 @@ class Persona(NodeMixin):
         )
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(unsafe_hash=True)
 class Entrance(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Entrance"]
@@ -236,7 +236,7 @@ class Exit(Entrance):
         return f"{self.scene}-exit-{self.index}"
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(unsafe_hash=True)
 class Action(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Action"]
@@ -262,7 +262,7 @@ class Action(NodeMixin):
         )
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(unsafe_hash=True)
 class Direction(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Direction"]
@@ -283,7 +283,7 @@ class Direction(NodeMixin):
         return cls(action=node.match_text, scene=node.parent, index=node.index)
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(unsafe_hash=True)
 class Dialogue(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Dialogue"]
@@ -312,7 +312,7 @@ class Dialogue(NodeMixin):
         )
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(unsafe_hash=True)
 class Speech(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Speech"]
@@ -363,7 +363,7 @@ ResolvedNode = Union[
 ChildNode = ResolvedNode
 
 
-@schema.dataschema(frozen=True, delay=True)
+@schema.dataschema(unsafe_hash=True, delay=True)
 class NodeTree(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["NodeTree"]
@@ -405,7 +405,7 @@ ChildNode = Union[
 ]
 
 
-@schema.dataschema(frozen=True)
+@schema.dataschema(unsafe_hash=True)
 class MetaData(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["MetaData"]
@@ -446,7 +446,7 @@ class MetaData(NodeMixin):
         return dikt
 
 
-@schema.dataschema(frozen=True, delay=True)
+@schema.dataschema(unsafe_hash=True, delay=True)
 class Play(NodeMixin):
     __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
         DEFINITIONS["Play"]
@@ -462,7 +462,7 @@ class Play(NodeMixin):
         return inflection.parameterize(f"{self.meta.title}-play")
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass(unsafe_hash=True)
 class GenericNode(NodeMixin):
     """The root-object of a script.
 
