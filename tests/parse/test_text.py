@@ -110,7 +110,7 @@ generic_scene = ast.GenericNode("scene", "Scene II", 0, 0)
     ],
 )
 def test_default_handler(ctx: ParserContext, node: _PreNode, expected):
-    assert parse.text.default_handler(ctx, node).index.generic[-1] == expected
+    assert parse.text.default_handler(ctx, node).index.generic.popitem()[-1] == expected
 
 
 @pytest.mark.parametrize(
@@ -139,15 +139,14 @@ def test_check_linecount(
 
 def test_check_direction():
     ctx = ParserContext(index=ast.Index())
-    ctx.index.append(
-        ast.GenericNode(
-            type="direction",
-            text="_Foo",
-            index=0,
-            match=frozendict({"start": "_", "direction": "Foo"}),
-        )
+    gen = ast.GenericNode(
+        type="direction",
+        text="_Foo",
+        index=0,
+        match=frozendict({"start": "_", "direction": "Foo"}),
     )
+    ctx.add(gen)
     node = _PreNode(type=ast.NodeType.DIAL, text="foo")
     append = parse.text.check_direction(ctx, node)
     assert not append
-    assert ctx.index.generic[-1].text == "_Foo foo"
+    assert ctx.index.generic.popitem()[-1].text == "_Foo foo"

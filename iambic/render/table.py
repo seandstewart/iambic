@@ -56,16 +56,17 @@ class Tabulator:
         personae: Dict[str, ast.Persona],
     ):
         for child in scene.children:
-            if isinstance(child, ast.Speech):
+            if child.type == ast.NodeType.SPCH:
                 persona = personae[child.persona]
                 index = char_index[persona.name]
                 node_column[index] = Marker.SPEAK.value
                 cline_column[index] += child.num_lines
-            elif isinstance(child, ast.Entrance):
+            elif child.type == ast.NodeType.ENTER:
                 for pers in child.personae:
                     persona = personae[pers]
                     index = char_index[persona.name]
-                    node_column[index] = Marker.PRES.value
+                    if not node_column[index]:
+                        node_column[index] = Marker.PRES.value
 
     def tabulate(self, play: ast.Play) -> Table:
         """Generate a table for this play.

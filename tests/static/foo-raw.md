@@ -53,7 +53,7 @@ direction? For what purpose?_
 
 # EPILOGUE
 
-_Enter FOO_
+_Enter FOO and BAR_
 
 **FOO**  
 _[Reads]_  

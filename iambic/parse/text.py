@@ -5,7 +5,6 @@ import functools
 import logging
 import typing
 from collections import defaultdict
-from typing import Pattern, Match
 
 from html2text import html2text
 
@@ -22,11 +21,6 @@ from iambic.ast import (
 from iambic.schema import frozendict
 
 logger = logging.getLogger(__name__)
-
-
-@functools.lru_cache(maxsize=None, typed=True)
-def _cached_match(pattern: Pattern, value: str) -> Match:
-    return pattern.fullmatch(value) or pattern.match(value)
 
 
 def _safe_resolve(
@@ -67,9 +61,14 @@ class ParserContext:
     act: GenericNode = None
     scene: GenericNode = None
     character: GenericNode = None
+    last: GenericNode = None
     index: Index = dataclasses.field(default_factory=Index)
     lineno: int = 0
     linepart: int = 0
+
+    def add(self, node: GenericNode):
+        self.index.add(node)
+        self.last = node
 
 
 class Parser:
@@ -137,18 +136,18 @@ class Parser:
             kwargs["parent"] = _safe_id(ctx.act)
 
         node = node.to_generic(**kwargs)
-        ctx.index.append(node)
+        ctx.add(node)
         return ctx
 
     @staticmethod
     def persona_handler(ctx: ParserContext, node: _PreNode) -> ParserContext:
         """The handler for :py:class:`NodeType.PERS`"""
         node = node.to_generic()
-        resolved = ctx.index[node]
-        if resolved:
-            node = dataclasses.replace(node, index=resolved.index)
+        resolved = node.resolve()
+        if resolved.id in ctx.index:
+            node: GenericNode = dataclasses.replace(node, index=ctx.index[resolved.id].index)
         ctx.character = node
-        ctx.index.append(node)
+        ctx.add(node)
         return ctx
 
     @staticmethod
@@ -186,36 +185,34 @@ class Parser:
     @classmethod
     def check_direction(cls, ctx: ParserContext, node: _PreNode) -> bool:
         """Check that a given node is not actually within a stage-direction/action/enter/exit context."""
-        append = True
+        add = True
         if ctx.index:
-            prev: GenericNode = ctx.index.generic[-1]
-
             if (
-                prev.type
+                ctx.last.type
                 in {NodeType.DIR, NodeType.ACTION, NodeType.EXIT, NodeType.ENTER}
-                and node.type in {NodeType.DIAL, prev.type}
-                and not prev.match.get("end")
+                and node.type in {NodeType.DIAL, ctx.last.type}
+                and not ctx.last.match.get("end")
             ):
-                text = f"{prev.text.strip()} {node.text.strip()}"
-                node = cls.match(text, prev.index)
-                ctx.index[-1] = dataclasses.replace(
-                    prev, match=frozendict(node.match), text=text
+                text = f"{ctx.last.text.strip()} {node.text.strip()}"
+                node = cls.match(text, ctx.last.index)
+                new: GenericNode = dataclasses.replace(
+                    ctx.last, match=frozendict(node.match), text=text
                 )
-                append = False
-        return append
+                ctx.add(new)
+                add = False
+        return add
 
     def locale_handler(self, ctx: ParserContext, node: _PreNode) -> ParserContext:
         """The handler for locale-types, defined in :py:attr:`Parser.LOCALES`"""
         ctx.parent, node = self.check_parent(ctx.act, node)
-        last_type = ctx.index[-1].type if ctx.index else None
         if node.type == NodeType.ACT:
             ctx.act = node
-        elif node.type in {NodeType.EPIL, NodeType.PROL} and last_type != NodeType.ACT:
+        elif node.type in {NodeType.EPIL, NodeType.PROL} and ((ctx.last.type if ctx.last else None) != NodeType.ACT):
             ctx.scene = node
             ctx.act = node
         else:
             ctx.scene = node
-        ctx.index.append(node)
+        ctx.add(node)
         return ctx
 
     @staticmethod
@@ -240,12 +237,11 @@ class Parser:
         text = html2text(text) if input_type is InputType.HTML else text
         for ix, line in enumerate(x for x in text.split("\n") if x.strip()):
             node = self.match(line, ix)
-            append = self.check_direction(ctx, node)
-            if append:
+            add = self.check_direction(ctx, node)
+            if add:
                 self.check_linecount(ctx, node)
                 handler = self.__parser_map[node.type]
                 ctx = handler(ctx=ctx, node=node)
-
         return ctx.index.to_tree(title=title) if tree else ctx.index
 
     __call__ = parse

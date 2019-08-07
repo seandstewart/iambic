@@ -1,19 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 import functools
-from collections import deque, defaultdict
+from collections import defaultdict
 from typing import (
-    Deque,
     Sequence,
     DefaultDict,
     Dict,
     Type,
-    Mapping,
-    Tuple,
     Optional,
     List,
     Set,
     Union,
+    ValuesView,
 )
 
 
@@ -22,7 +20,11 @@ import iambic.ast.node as ast
 __all__ = ("Index",)
 
 
-class Index(Deque[ast.ResolvedNode]):
+IndexKeyType = Union[ast.NodeType, ast.ResolvedNode, Type[ast.ResolvedNode], ast.GenericNode, str]
+SpeechMemberType = Union[ast.Action, ast.Dialogue, ast.Direction]
+
+
+class Index(Dict[str, ast.ResolvedNode]):
     """An ordered collection of nodes in a script.
 
     ``Parser.parse`` builds a list of :class:`GenericNode`, which can be resolved into the specific
@@ -32,114 +34,156 @@ class Index(Deque[ast.ResolvedNode]):
     def __init__(self, initlist: Sequence[ast.GenericNode] = None):
         initlist = initlist or []
         super().__init__(initlist)
-        self.generic = deque()
+        self.generic = {}
         self.__type_map: DefaultDict[
             ast.NodeType, Dict[str, ast.ResolvedNode]
         ] = defaultdict(dict)
 
-    def __setitem__(self, key, value: ast.GenericNode):
-        if isinstance(value, ast.GenericNode):
-            self.generic[key] = value
-            value = value.resolve()
-        self.__type_map[value.type][value.id] = value
-        super().__setitem__(key, value)
-
     def __getitem__(
-        self, item: Union[ast.NodeType, ast.ResolvedNode, ast.GenericNode, int, str]
+        self, item: IndexKeyType
     ):
-        if isinstance(item, int):
-            return super().__getitem__(item)
         if isinstance(item, ast.NodeType):
             return self.__type_map[item]
-        if isinstance(item, ast.GenericNode):
-            item = item.resolve()
-        if ast.GenericNode.resolvable(type(item)):
-            return self.__type_map[item.type].get(item.id)
+        return super().__getitem__(item)
 
-    def append(self, item: ast.GenericNode) -> None:
-        if isinstance(item, ast.GenericNode):
-            self.generic.append(item)
-            item = item.resolve()
-        self.__type_map[item.type][item.id] = item
-        super().append(item)
+    def get(
+        self, k: IndexKeyType, default=None
+    ):
+        default = default or {}
+        try:
+            return self.__getitem__(k)
+        except KeyError:
+            return default
 
-    def appendleft(self, item: ast.GenericNode) -> None:
-        if isinstance(item, ast.GenericNode):
-            self.generic.appendleft(item)
-            item = item.resolve()
-        self.__type_map[item.type] = dict(
-            **{item.id: item}, **self.__type_map[item.type]
-        )
-        super().appendleft(item)
+    def get_values(self, k: ast.NodeType) -> ValuesView[ast.ResolvedNode]:
+        return self.get(k, default={}).values()
 
-    def get(self, node_type: Type[ast.ResolvedNode]) -> Mapping[str, ast.ResolvedNode]:
-        return self.__type_map[node_type.type]
+    def add(self, node: ast.GenericNode):
+        resolved = node.resolve()
+        self[resolved.id] = resolved
+        self.generic[resolved.id] = node
+        self.__type_map[resolved.type][resolved.id] = resolved
 
-    def personae(self) -> Tuple[ast.Persona, ...]:
-        return tuple(self.get(ast.Persona).values())
+    @property
+    def personae(self) -> ValuesView[ast.Persona]:
+        return self.get_values(ast.NodeType.PERS)
 
-    def acts(self) -> Tuple[ast.Act, ...]:
-        return tuple(self.get(ast.Act).values())
+    @property
+    def acts(self) -> ValuesView[ast.Act]:
+        return self.get_values(ast.NodeType.ACT)
 
-    def scenes(self) -> Tuple[ast.Scene, ...]:
-        return tuple(self.get(ast.Scene).values())
+    @property
+    def scenes(self) -> ValuesView[ast.Scene]:
+        return self.get_values(ast.NodeType.SCENE)
 
-    def prologues(self) -> Tuple[ast.Prologue, ...]:
-        return tuple(self.get(ast.Prologue).values())
+    @property
+    def prologues(self) -> ValuesView[ast.Prologue]:
+        return self.get_values(ast.NodeType.PROL)
 
-    def epilogues(self) -> Tuple[ast.Epilogue, ...]:
-        return tuple(self.get(ast.Epilogue).values())
+    @property
+    def epilogues(self) -> ValuesView[ast.Epilogue]:
+        return self.get_values(ast.NodeType.EPIL)
 
-    def dialogue(self) -> Tuple[ast.Dialogue, ...]:
-        return tuple(self.get(ast.Dialogue).values())
+    @property
+    def dialogue(self) -> ValuesView[ast.Dialogue]:
+        return self.get_values(ast.NodeType.DIAL)
 
+    @property
+    def directions(self) -> ValuesView[ast.Direction]:
+        return self.get_values(ast.NodeType.DIR)
+
+    @property
+    def actions(self) -> ValuesView[ast.Action]:
+        return self.get_values(ast.NodeType.ACTION)
+
+    @property
+    def entrances(self) -> ValuesView[ast.Entrance]:
+        return self.get_values(ast.NodeType.ENTER)
+
+    @property
+    def exits(self) -> ValuesView[ast.Exit]:
+        return self.get_values(ast.NodeType.EXIT)
+
+    @property
     def intermission(self) -> Optional[ast.Intermission]:
-        inter = tuple(self.get(ast.Intermission).values())
-        return inter[-1] if inter else None
+        inter = {*self.get_values(ast.NodeType.INTER)}
+        return inter.pop() if inter else None
+
+    def resolve_presence(self):
+        members: List[Union[ast.Entrance, ast.Exit]] = [*self.entrances] + [*self.exits]
+        personae = {x.text: x for x in self.personae}
+        for member in members:
+            present = tuple(y.id for x, y in personae.items() if x in member.text)
+            member.personae = present
 
     def get_speeches(self) -> List[ast.Speech]:
-        persona, scene, speech, speeches = None, None, [], []
-        for node in self:
-            if type(node) in {ast.Scene, ast.Prologue, ast.Epilogue, ast.Persona}:
-                if isinstance(node, ast.Persona):
-                    if persona and scene and speech:
-                        speeches.append(
-                            ast.Speech(
-                                persona.id, scene.id, tuple(speech), speech[0].index
-                            )
-                        )
-                    persona, speech = node, []
-                elif type(node) in {ast.Scene, ast.Prologue, ast.Epilogue}:
-                    if persona and scene and speech:
-                        speeches.append(
-                            ast.Speech(
-                                persona.id, scene.id, tuple(speech), speech[0].index
-                            )
-                        )
-                    persona, scene, speech = None, node, []
-            elif type(node) in {ast.Dialogue, ast.Action, ast.Direction}:
-                speech.append(node)
+        # Candidates for members of speeches.
+        members: List[SpeechMemberType] = sorted(
+            [*self.dialogue] + [*self.directions] + [*self.actions], key=self.node_sort
+        )
+        persona: Optional[ast.Persona] = None
+        scene: Optional[ast.Scene] = self[members[0].scene]
+        speech: List[SpeechMemberType] = []
+        speeches: List[ast.Speech] = []
 
+        for node in members:
+            # If we're in a new scene, we're definitely in a new speech.
+            if node.scene != scene.id:
+                spch = ast.Speech(
+                    persona.id, scene.id, tuple(speech), speech[0].index
+                )
+                speeches.append(spch)
+                # Directions aren't directly associated to a persona, so do not have the persona attr.
+                # BUT they can occur within speeches, so we still have to track them all.
+                persona = None if node.type == ast.NodeType.DIR else self[node.persona]
+                scene, persona, speech = self[node.scene], persona, [node]
+                continue
+            # These puppies have a `persona` attr, so are easily associated to a speech.
+            if node.type in {ast.NodeType.DIAL, ast.NodeType.ACTION}:
+                # If the persona isn't set or has been reset.
+                # See above for when persona can be set to null.
+                if not persona:
+                    persona = self[node.persona]
+                    speech.append(node)
+                    continue
+                # Short-circuit the below if the personae match.
+                if node.persona == persona.id:
+                    speech.append(node)
+                    continue
+                # Otherwise, we have a new persona, meaning we have a new speech.
+                spch = ast.Speech(
+                    persona.id, scene.id, tuple(speech), speech[0].index
+                )
+                speeches.append(spch)
+                persona, scene, speech = self[node.persona], self[node.scene], [node]
+                continue
+            # If we've set a persona and we come across a Direction,
+            # we can be reasonably sure this direction should be associated to this speech.
+            if node.type == ast.NodeType.DIR and persona:
+                speech.append(node)
+        # Once we've exhausted all members, it's possible we have one speech left.
         if persona and scene and speech:
-            speeches.append(
-                ast.Speech(persona.id, scene.id, tuple(speech), speech[0].index)
+            spch = ast.Speech(
+                persona.id, scene.id, tuple(speech), speech[0].index
             )
+            speeches.append(spch)
+
         return speeches
 
     def filter_directions(self, speeches: Set[ast.Speech]) -> Set[ast.Direction]:
         speech_directions = set(
             y for x in speeches for y in x.speech if isinstance(y, ast.Direction)
         )
-        return set(self.get(ast.Direction).values()) - speech_directions
+        return set(self.get(ast.Direction, {}).values()) - speech_directions
 
     def get_scene_trees(self, sort: bool = True) -> List[ast.NodeTree]:
-        speeches = set(self.get_speeches())
+        speeches = {*self.get_speeches()}
         directions = self.filter_directions(speeches)
-        entrances = set(self.get(ast.Entrance).values())
-        exits = set(self.get(ast.Exit).values())
+        entrances = {*self.entrances}
+        exits = {*self.exits}
         children = speeches | directions | entrances | exits
         scenes = []
-        for node in set(self.scenes()) | set(self.prologues()) | set(self.epilogues()):
+        for node in {*self.scenes} | {*self.prologues} | {*self.epilogues}:
             child_nodes = set(x for x in children if x.scene == node.id)
             personae = set(
                 x.persona for x in child_nodes if x.type == ast.NodeType.SPCH
@@ -157,13 +201,13 @@ class Index(Deque[ast.ResolvedNode]):
         return scenes
 
     def get_act_trees(self, scenes: List[ast.NodeTree]) -> List[ast.NodeTree]:
-        scenes = set(scenes)
+        scenes = {*scenes}
         acts = {x for x in scenes if x.node.act is None}
-        scenes -= set(acts)
-        intermission = self.intermission()
-        prols = tuple(x for x in self.prologues() if x.act is None)
-        epils = tuple(x for x in self.epilogues() if x.act is None)
-        for act in set(prols + self.acts() + epils):
+        scenes -= acts
+        intermission = self.intermission
+        prols = set(x for x in self.prologues if x.act is None)
+        epils = set(x for x in self.epilogues if x.act is None)
+        for act in prols | {*self.acts} | epils:
             children = set(x for x in scenes if x.node.act == act.id)
             if children:
                 scenes -= children
@@ -176,12 +220,14 @@ class Index(Deque[ast.ResolvedNode]):
         return acts
 
     def to_tree(self, title: str = None) -> ast.Play:
+        # Resolve the presence of personae in entrances/exits
+        self.resolve_presence()
         # Build the Act-level trees
         scenes = self.get_scene_trees()
         # Build the Play-level trees
         acts = self.get_act_trees(scenes)
         # Put it all together
-        play = ast.Play(tuple(acts), tuple(self.personae()), ast.MetaData(title=title))
+        play = ast.Play(tuple(acts), tuple(self.personae), ast.MetaData(title=title))
         return play
 
     @staticmethod

@@ -5,7 +5,9 @@ PARSED = Play(
         NodeTree(
             node=Prologue(index=0, text="Prologue", setting=None, act=None),
             children=(
-                Entrance(index=1, text="Enter FOO", scene="prologue", personae=()),
+                Entrance(
+                    index=1, text="Enter FOO", scene="prologue", personae=("foo",)
+                ),
                 Speech(
                     persona="foo",
                     scene="prologue",
@@ -53,7 +55,7 @@ PARSED = Play(
                 ),
                 Exit(index=8, text="Exeunt", scene="prologue", personae=()),
             ),
-            personae=("foo", "bar-s-foo", "a-bar"),
+            personae=("bar-s-foo", "a-bar", "foo"),
         ),
         NodeTree(
             node=Act(index=9, text="ACT I", num=1),
@@ -65,7 +67,7 @@ PARSED = Play(
                             index=11,
                             text="Enter BAR",
                             scene="act-i-prologue",
-                            personae=(),
+                            personae=("bar",),
                         ),
                         Speech(
                             persona="bar",
@@ -101,7 +103,7 @@ PARSED = Play(
                             index=17,
                             text="Enter FOO and BAR",
                             scene="act-i-scene-i",
-                            personae=(),
+                            personae=("foo", "bar"),
                         ),
                         Speech(
                             persona="foo",
@@ -149,7 +151,7 @@ PARSED = Play(
                                     scene="act-i-scene-i",
                                     index=24,
                                     lineno=7,
-                                    linepart=0,
+                                    linepart=1,
                                 ),
                             ),
                             index=24,
@@ -164,7 +166,7 @@ PARSED = Play(
                                     scene="act-i-scene-i",
                                     index=26,
                                     lineno=7,
-                                    linepart=0,
+                                    linepart=2,
                                 ),
                             ),
                             index=26,
@@ -179,7 +181,7 @@ PARSED = Play(
                                     scene="act-i-scene-i",
                                     index=28,
                                     lineno=7,
-                                    linepart=0,
+                                    linepart=3,
                                 ),
                                 Direction(
                                     action="A long stage direction that goes on forever and says far to much to be reasonable. So much so that it takes up more than two lines, which is just ridiculous. I mean seriously, why? Why write so much for one stage direction? For what purpose?",
@@ -198,9 +200,9 @@ PARSED = Play(
                     children=(
                         Entrance(
                             index=34,
-                            text="Enter FOO",
+                            text="Enter FOO and BAR",
                             scene="act-i-epilogue",
-                            personae=(),
+                            personae=("foo", "bar"),
                         ),
                         Speech(
                             persona="foo",

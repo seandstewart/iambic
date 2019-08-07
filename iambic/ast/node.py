@@ -299,7 +299,7 @@ class Dialogue(NodeMixin):
     @property
     @functools.lru_cache(1)
     def id(self):
-        return f"{self.persona}-dialogue-{self.lineno}"
+        return f"{self.persona}-dialogue-{self.lineno}-{self.linepart}"
 
     @classmethod
     def from_node(cls, node: "GenericNode") -> "Dialogue":
@@ -309,6 +309,7 @@ class Dialogue(NodeMixin):
             node.scene,
             index=node.index,
             lineno=node.lineno,
+            linepart=node.linepart,
         )
 
 
@@ -422,7 +423,7 @@ class MetaData(NodeMixin):
     tags: Tuple[str] = dataclasses.field(default_factory=tuple)
 
     @functools.lru_cache(1)
-    def asmeta(self):
+    def asmeta(self):  # pragma: nocover
         dikt = {
             "creator": [{"type": "author", "text": self.author}],
             "contributor": [{"type": "editor", "text": "MIT"}],
@@ -504,17 +505,6 @@ class GenericNode(NodeMixin):
     act: str = None
     scene: str = None
 
-    @classmethod
-    @functools.lru_cache(maxsize=None)
-    def resolvable(cls, obj: Type) -> bool:
-        values = cls.__resolver_map__.values()
-        return obj in values
-
-    @classmethod
-    @functools.lru_cache(maxsize=1)
-    def sig(cls) -> inspect.Signature:
-        return inspect.signature(cls)
-
     @functools.lru_cache(maxsize=None)
     def resolve(self) -> ResolvedNode:
         """Resolve a GenericNode into a typed, "resolved" Node.
@@ -526,7 +516,7 @@ class GenericNode(NodeMixin):
         """
         try:
             return self.__resolver_map__[self.type].from_node(self)
-        except KeyError:
+        except KeyError:  # pragma: nocover
             raise TypeError(
                 f"Unrecognized node-type <{self.type}> for text <{self.text}>. "
                 f"Valid types are: {tuple(self.__resolver_map__)}"

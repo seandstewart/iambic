@@ -4,7 +4,7 @@ __description__ = (
     "iambic: Data extraction and rendering library for Shakespearean text."
 )
 __url__ = "https://github.com/seandstewart/iambic"
-__version__ = "0.4.1"
+__version__ = "0.5.0"
 __author__ = "Sean Stewart"
 __author_email__ = "sean_stewart@me.com"
 __license__ = "MIT"
