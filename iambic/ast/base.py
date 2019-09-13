@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+import dataclasses
 import enum
 import functools
 import inspect
@@ -7,14 +8,11 @@ import ujson as json
 import re
 from typing import Mapping, Collection
 
-from iambic import schema
-
 
 __all__ = (
     "NodeType",
     "NodeToken",
     "NodeMixin",
-    "DEFINITIONS",
     "jsonify",
     "NODE_PATTERN",
 )
@@ -81,32 +79,7 @@ NODE_PATTERN = re.compile(
 )
 
 
-def asdict(obj):
-    if isinstance(obj, (str, bytes, int)):
-        return obj
-
-    result = {}
-    for attr in (
-        x
-        for x in dir(obj)
-        if not x.startswith("_")
-        and x not in {"id", "klass", "linerange", "col", "cols", "num_lines"}
-    ):
-        val = getattr(obj, attr)
-        if inspect.ismethod(val):
-            continue
-        if hasattr(val, "asdict"):
-            val = val.asdict()
-        elif isinstance(val, enum.Enum):
-            val = val.value
-        elif isinstance(val, Mapping):
-            val = {x: asdict(y) for x, y in val.items()}
-        elif isinstance(val, Collection) and not isinstance(val, str):
-            val = tuple(asdict(x) for x in val)
-
-        result[attr] = val
-
-    return result
+jsonify = functools.partial(json.dumps, indent=4)
 
 
 class NodeMixin:
@@ -115,8 +88,11 @@ class NodeMixin:
     def klass(self):
         return type(self).__name__.lower()
 
-    asdict = asdict
+    def asdict(self) -> Mapping:
+        dikt = dataclasses.asdict(self)
+        dikt["type"] = self.type
+        return dikt
 
+    def json(self):
+        return jsonify(self.asdict())
 
-DEFINITIONS = schema.SCHEMA["definitions"]
-jsonify = functools.partial(json.dumps, indent=4, separators=(", ", ": "))

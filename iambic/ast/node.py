@@ -2,15 +2,13 @@
 # -*- coding: UTF-8 -*-
 import dataclasses
 import functools
-import inspect
 from typing import ClassVar, Optional, Union, Tuple, Any, Mapping, Type, List
 
 import inflection
 import typic
 
-from iambic import schema, roman
-from iambic.schema import frozendict
-from .base import NodeType, NodeMixin, DEFINITIONS
+from iambic import roman
+from .base import NodeType, NodeMixin
 
 
 __all__ = (
@@ -37,15 +35,12 @@ __all__ = (
 )
 
 
-@schema.dataschema(unsafe_hash=True)
+@typic.klass(unsafe_hash=True)
 class Act(NodeMixin):
-    __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
-        DEFINITIONS["Act"]
-    )
-    type: ClassVar[NodeType] = NodeType.ACT
     index: int
     text: str
     num: int
+    type: NodeType = dataclasses.field(init=False, default=NodeType.ACT)
 
     @property
     @functools.lru_cache(1)
@@ -64,17 +59,14 @@ class Act(NodeMixin):
         return cls(index=node.index, text=node.match_text, num=num)
 
 
-@schema.dataschema(unsafe_hash=True)
+@typic.klass(unsafe_hash=True)
 class Scene(NodeMixin):
-    __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
-        DEFINITIONS["Scene"]
-    )
-    type: ClassVar[NodeType] = NodeType.SCENE
     index: int
     text: str
     num: int
     act: str
     setting: Optional[str]
+    type: NodeType = dataclasses.field(init=False, default=NodeType.SCENE)
 
     @property
     @functools.lru_cache(1)
@@ -102,16 +94,13 @@ class Scene(NodeMixin):
         )
 
 
-@schema.dataschema(unsafe_hash=True)
+@typic.klass(unsafe_hash=True)
 class Prologue(NodeMixin):
-    __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
-        DEFINITIONS["Prologue"]
-    )
-    type: ClassVar[NodeType] = NodeType.PROL
     index: int
     text: str
     setting: Optional[str]
     act: str = None
+    type: NodeType = dataclasses.field(init=False, default=NodeType.PROL)
 
     @property
     @functools.lru_cache(1)
@@ -132,11 +121,9 @@ class Prologue(NodeMixin):
         )
 
 
+@typic.klass(unsafe_hash=True)
 class Epilogue(Prologue):
-    __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
-        DEFINITIONS["Epilogue"]
-    )
-    type: ClassVar[NodeType] = NodeType.EPIL
+    type: NodeType = dataclasses.field(init=False, default=NodeType.EPIL)
 
     @property
     @functools.lru_cache(1)
@@ -150,15 +137,12 @@ class Epilogue(Prologue):
         return f"{pre}E"
 
 
-@schema.dataschema(unsafe_hash=True)
+@typic.klass(unsafe_hash=True)
 class Intermission(NodeMixin):
-    __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
-        DEFINITIONS["Intermission"]
-    )
-    type: ClassVar[NodeType] = NodeType.INTER
     index: int
     text: str
     act: str
+    type: NodeType = dataclasses.field(init=False, default=NodeType.INTER)
 
     @property
     @functools.lru_cache(1)
@@ -175,16 +159,13 @@ class Intermission(NodeMixin):
         return "INT"
 
 
-@schema.dataschema(unsafe_hash=True)
+@typic.klass(unsafe_hash=True)
 class Persona(NodeMixin):
-    __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
-        DEFINITIONS["Persona"]
-    )
-    type: ClassVar[NodeType] = NodeType.PERS
     index: int
     text: str
     name: str
     short: str = None
+    type: NodeType = dataclasses.field(init=False, default=NodeType.PERS)
 
     def __eq__(self, other) -> bool:
         return other.name == self.name if hasattr(other, "name") else False
@@ -203,16 +184,13 @@ class Persona(NodeMixin):
         )
 
 
-@schema.dataschema(unsafe_hash=True)
+@typic.klass(unsafe_hash=True)
 class Entrance(NodeMixin):
-    __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
-        DEFINITIONS["Entrance"]
-    )
-    type: ClassVar[NodeType] = NodeType.ENTER
     index: int
     text: str
     scene: str
-    personae: Tuple[str] = dataclasses.field(default_factory=tuple)
+    personae: Tuple[str, ...] = dataclasses.field(default_factory=tuple)
+    type: NodeType = dataclasses.field(init=False, default=NodeType.ENTER)
 
     @property
     @functools.lru_cache(1)
@@ -224,11 +202,9 @@ class Entrance(NodeMixin):
         return cls(index=node.index, text=node.match_text, scene=node.parent)
 
 
+@typic.klass(unsafe_hash=True)
 class Exit(Entrance):
-    __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
-        DEFINITIONS["Exit"]
-    )
-    type: ClassVar[NodeType] = NodeType.EXIT
+    type: NodeType = dataclasses.field(init=False, default=NodeType.EXIT)
 
     @property
     @functools.lru_cache(1)
@@ -236,16 +212,13 @@ class Exit(Entrance):
         return f"{self.scene}-exit-{self.index}"
 
 
-@schema.dataschema(unsafe_hash=True)
+@typic.klass(unsafe_hash=True)
 class Action(NodeMixin):
-    __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
-        DEFINITIONS["Action"]
-    )
-    type: ClassVar[NodeType] = NodeType.ACTION
     action: str
     persona: str
     scene: str
     index: int
+    type: NodeType = dataclasses.field(init=False, default=NodeType.ACTION)
 
     @property
     @functools.lru_cache(1)
@@ -262,16 +235,13 @@ class Action(NodeMixin):
         )
 
 
-@schema.dataschema(unsafe_hash=True)
+@typic.klass(unsafe_hash=True)
 class Direction(NodeMixin):
-    __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
-        DEFINITIONS["Direction"]
-    )
-    type: ClassVar[NodeType] = NodeType.DIR
     action: str
     scene: str
     index: int
     stop: bool = True
+    type: NodeType = dataclasses.field(init=False, default=NodeType.DIR)
 
     @property
     @functools.lru_cache(1)
@@ -283,18 +253,15 @@ class Direction(NodeMixin):
         return cls(action=node.match_text, scene=node.parent, index=node.index)
 
 
-@schema.dataschema(unsafe_hash=True)
+@typic.klass(unsafe_hash=True)
 class Dialogue(NodeMixin):
-    __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
-        DEFINITIONS["Dialogue"]
-    )
-    type: ClassVar[NodeType] = NodeType.DIAL
     line: str
     persona: str
     scene: str
     index: int
     lineno: int
     linepart: int = 0
+    type: NodeType = dataclasses.field(init=False, default=NodeType.DIAL)
 
     @property
     @functools.lru_cache(1)
@@ -313,16 +280,13 @@ class Dialogue(NodeMixin):
         )
 
 
-@schema.dataschema(unsafe_hash=True)
+@typic.klass(unsafe_hash=True, delay=True)
 class Speech(NodeMixin):
-    __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
-        DEFINITIONS["Speech"]
-    )
-    type: ClassVar[NodeType] = NodeType.SPCH
     persona: str
     scene: str
-    speech: Tuple[Union[Dialogue, Action, Direction]]
+    speech: Tuple[Union[Dialogue, Action, Direction], ...]
     index: int
+    type: NodeType = dataclasses.field(init=False, default=NodeType.SPCH)
 
     @property
     @functools.lru_cache(1)
@@ -364,19 +328,16 @@ ResolvedNode = Union[
 ChildNode = ResolvedNode
 
 
-@schema.dataschema(unsafe_hash=True, delay=True)
+@typic.klass(unsafe_hash=True, delay=True)
 class NodeTree(NodeMixin):
-    __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
-        DEFINITIONS["NodeTree"]
-    )
-    type: ClassVar[NodeType] = NodeType.TREE
     node: ResolvedNode
-    children: Tuple[ChildNode] = dataclasses.field(default_factory=tuple)
-    personae: Tuple[str] = dataclasses.field(default_factory=tuple)
+    children: Tuple[ChildNode, ...] = dataclasses.field(default_factory=tuple)
+    personae: Tuple[str, ...] = dataclasses.field(default_factory=tuple)
+    type: NodeType = dataclasses.field(init=False, default=NodeType.TREE)
 
     @property
     @functools.lru_cache(1)
-    def cols(self) -> Tuple[Any]:
+    def cols(self) -> Tuple[Any, ...]:
         return tuple(
             getattr(x, "node", x).col
             for x in self.children
@@ -406,12 +367,8 @@ ChildNode = Union[
 ]
 
 
-@schema.dataschema(unsafe_hash=True)
+@typic.klass(unsafe_hash=True)
 class MetaData(NodeMixin):
-    __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
-        DEFINITIONS["MetaData"]
-    )
-    type: ClassVar[NodeType] = NodeType.META
     rights: str = "Creative Commons Non-Commercial Share Alike 3.0"
     language: str = "en-GB-emodeng"
     publisher: str = "Published w/ ❤️ using iambic - https://pypi.org/project/iambic"
@@ -419,8 +376,9 @@ class MetaData(NodeMixin):
     subtitle: str = None
     edition: int = 1
     author: str = "William Shakespeare"
-    editors: Tuple[str] = dataclasses.field(default_factory=tuple)
-    tags: Tuple[str] = dataclasses.field(default_factory=tuple)
+    editors: Tuple[str, ...] = dataclasses.field(default_factory=tuple)
+    tags: Tuple[str, ...] = dataclasses.field(default_factory=tuple)
+    type: NodeType = dataclasses.field(init=False, default=NodeType.META)
 
     @functools.lru_cache(1)
     def asmeta(self):  # pragma: nocover
@@ -447,15 +405,12 @@ class MetaData(NodeMixin):
         return dikt
 
 
-@schema.dataschema(unsafe_hash=True, delay=True)
+@typic.klass(unsafe_hash=True, delay=True)
 class Play(NodeMixin):
-    __static_definition__: ClassVar[schema.frozendict] = schema.frozendict(
-        DEFINITIONS["Play"]
-    )
-    type: ClassVar[NodeType] = NodeType.PLAY
-    children: Tuple[NodeTree] = dataclasses.field(default_factory=tuple)
-    personae: Tuple[Persona] = dataclasses.field(default_factory=tuple)
+    children: Tuple[NodeTree, ...] = dataclasses.field(default_factory=tuple)
+    personae: Tuple[Persona, ...] = dataclasses.field(default_factory=tuple)
     meta: MetaData = dataclasses.field(default_factory=MetaData)
+    type: NodeType = dataclasses.field(init=False, default=NodeType.PLAY)
 
     @property
     @functools.lru_cache(1)
@@ -470,7 +425,7 @@ class GenericNode(NodeMixin):
     A script ``Node`` represents a single line of text in a script.
     """
 
-    __resolver_map__: ClassVar[Mapping[NodeType, ResolvedNode]] = frozendict(
+    __resolver_map__: ClassVar[Mapping[NodeType, Type[ResolvedNode]]] = typic.FrozenDict(
         {
             NodeType.ACT: Act,
             NodeType.ACTION: Action,
@@ -500,7 +455,7 @@ class GenericNode(NodeMixin):
     # If reading from JSON, we don't have/need this,
     # it will be provided inherently by the data-structure
     # on resolution-time.
-    match: frozendict = dataclasses.field(default_factory=frozendict)
+    match: typic.FrozenDict = dataclasses.field(default_factory=typic.FrozenDict)
     parent: str = None
     act: str = None
     scene: str = None
@@ -547,7 +502,7 @@ def node_coercer(value: Any) -> Optional[ResolvedNode]:
     if not isinstance(value, Mapping):
         value = typic.coerce(value, dict)
 
-    handler: ResolvedNode = GenericNode.__resolver_map__[value.pop("type")]
+    handler: Type[ResolvedNode] = GenericNode.__resolver_map__[value.pop("type")]
     return handler(**value)
 
 

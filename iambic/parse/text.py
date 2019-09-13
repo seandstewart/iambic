@@ -6,6 +6,7 @@ import logging
 import typing
 from collections import defaultdict
 
+import typic
 from html2text import html2text
 
 from iambic.ast import (
@@ -18,7 +19,6 @@ from iambic.ast import (
     NodeToken,
     NODE_PATTERN,
 )
-from iambic.schema import frozendict
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class _PreNode:
             index=self.index,
             lineno=self.lineno,
             linepart=self.linepart,
-            match=frozendict(self.match),
+            match=typic.FrozenDict(self.match),
             **kwargs,
         )
 
@@ -196,7 +196,7 @@ class Parser:
                 text = f"{ctx.last.text.strip()} {node.text.strip()}"
                 node = cls.match(text, ctx.last.index)
                 new: GenericNode = dataclasses.replace(
-                    ctx.last, match=frozendict(node.match), text=text
+                    ctx.last, match=typic.FrozenDict(node.match), text=text
                 )
                 ctx.add(new)
                 add = False

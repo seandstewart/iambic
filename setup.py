@@ -53,7 +53,7 @@ INSTALL_REQUIRES = (
     "ujson",
     "yattag",
     "tablib",
-    "typical>=1.10.1",
+    "typical~=2.0",
 )
 TESTS_REQUIRE = ("pytest",)
 

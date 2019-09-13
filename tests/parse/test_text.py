@@ -4,10 +4,10 @@ import dataclasses
 from typing import Tuple
 
 import pytest
+import typic
 
 from iambic import ast, parse
 from iambic.parse.text import ParserContext, _PreNode
-from iambic.schema import frozendict
 
 
 @pytest.mark.parametrize(
@@ -143,7 +143,7 @@ def test_check_direction():
         type="direction",
         text="_Foo",
         index=0,
-        match=frozendict({"start": "_", "direction": "Foo"}),
+        match=typic.FrozenDict({"start": "_", "direction": "Foo"}),
     )
     ctx.add(gen)
     node = _PreNode(type=ast.NodeType.DIAL, text="foo")
