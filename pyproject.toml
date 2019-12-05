@@ -1,0 +1,46 @@
+[tool.poetry]
+name = "iambic"
+version = "0.6.0rc1"
+description = "Data extraction and rendering library for Shakespearean text."
+authors = ["Sean Stewart <sean_stewart@me.com>"]
+license = "MIT"
+copyright = "2019 Sean Stewart"
+readme = "README.md"
+repository = "https://github.com/seandstewart/iambic"
+keywords = ["text", "render", "shakespeare", "text-processing"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Utilities",
+    "Topic :: Text Processing",
+    "Topic :: Text Processing :: Indexing",
+    "Topic :: Text Processing :: Linguistic",
+    "Topic :: Text Processing :: Markup",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Typing :: Typed",
+]
+include = ["*.md", "*.json"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+typical = {version = ">1.10", allows-prereleases = true, extras = ["schema"]}
+yattag = "^1.12"
+html2text = "^2019.9"
+tablib = "^0.14.0"
+ujson = "^1.35"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.3"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

@@ -1,4 +1,0 @@
-graft iambic iambic
-recursive-include iambic *.json
-recursive-include iambic *.md
-global-exclude *.py[cod] __pycache__ *.so tests .*
