@@ -20,7 +20,9 @@ import iambic.ast.node as ast
 __all__ = ("Index",)
 
 
-IndexKeyType = Union[ast.NodeType, ast.ResolvedNode, Type[ast.ResolvedNode], ast.GenericNode, str]
+IndexKeyType = Union[
+    ast.NodeType, ast.ResolvedNode, Type[ast.ResolvedNode], ast.GenericNode, str
+]
 SpeechMemberType = Union[ast.Action, ast.Dialogue, ast.Direction]
 
 
@@ -39,16 +41,12 @@ class Index(Dict[str, ast.ResolvedNode]):
             ast.NodeType, Dict[str, ast.ResolvedNode]
         ] = defaultdict(dict)
 
-    def __getitem__(
-        self, item: IndexKeyType
-    ):
+    def __getitem__(self, item: IndexKeyType):
         if isinstance(item, ast.NodeType):
             return self.__type_map[item]
         return super().__getitem__(item)
 
-    def get(
-        self, k: IndexKeyType, default=None
-    ):
+    def get(self, k: IndexKeyType, default=None):
         default = default or {}
         try:
             return self.__getitem__(k)
@@ -129,9 +127,7 @@ class Index(Dict[str, ast.ResolvedNode]):
         for node in members:
             # If we're in a new scene, we're definitely in a new speech.
             if node.scene != scene.id:
-                spch = ast.Speech(
-                    persona.id, scene.id, tuple(speech), speech[0].index
-                )
+                spch = ast.Speech(persona.id, scene.id, tuple(speech), speech[0].index)
                 speeches.append(spch)
                 # Directions aren't directly associated to a persona, so do not have the persona attr.
                 # BUT they can occur within speeches, so we still have to track them all.
@@ -151,9 +147,7 @@ class Index(Dict[str, ast.ResolvedNode]):
                     speech.append(node)
                     continue
                 # Otherwise, we have a new persona, meaning we have a new speech.
-                spch = ast.Speech(
-                    persona.id, scene.id, tuple(speech), speech[0].index
-                )
+                spch = ast.Speech(persona.id, scene.id, tuple(speech), speech[0].index)
                 speeches.append(spch)
                 persona, scene, speech = self[node.persona], self[node.scene], [node]
                 continue
@@ -163,9 +157,7 @@ class Index(Dict[str, ast.ResolvedNode]):
                 speech.append(node)
         # Once we've exhausted all members, it's possible we have one speech left.
         if persona and scene and speech:
-            spch = ast.Speech(
-                persona.id, scene.id, tuple(speech), speech[0].index
-            )
+            spch = ast.Speech(persona.id, scene.id, tuple(speech), speech[0].index)
             speeches.append(spch)
 
         return speeches

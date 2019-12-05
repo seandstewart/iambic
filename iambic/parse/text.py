@@ -145,7 +145,9 @@ class Parser:
         node = node.to_generic()
         resolved = node.resolve()
         if resolved.id in ctx.index:
-            node: GenericNode = dataclasses.replace(node, index=ctx.index[resolved.id].index)
+            node: GenericNode = dataclasses.replace(
+                node, index=ctx.index[resolved.id].index
+            )
         ctx.character = node
         ctx.add(node)
         return ctx
@@ -207,7 +209,9 @@ class Parser:
         ctx.parent, node = self.check_parent(ctx.act, node)
         if node.type == NodeType.ACT:
             ctx.act = node
-        elif node.type in {NodeType.EPIL, NodeType.PROL} and ((ctx.last.type if ctx.last else None) != NodeType.ACT):
+        elif node.type in {NodeType.EPIL, NodeType.PROL} and (
+            (ctx.last.type if ctx.last else None) != NodeType.ACT
+        ):
             ctx.scene = node
             ctx.act = node
         else:

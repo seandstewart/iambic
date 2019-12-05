@@ -425,7 +425,9 @@ class GenericNode(NodeMixin):
     A script ``Node`` represents a single line of text in a script.
     """
 
-    __resolver_map__: ClassVar[Mapping[NodeType, Type[ResolvedNode]]] = typic.FrozenDict(
+    __resolver_map__: ClassVar[
+        Mapping[NodeType, Type[ResolvedNode]]
+    ] = typic.FrozenDict(
         {
             NodeType.ACT: Act,
             NodeType.ACTION: Action,

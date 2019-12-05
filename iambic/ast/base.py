@@ -3,19 +3,12 @@
 import dataclasses
 import enum
 import functools
-import inspect
 import ujson as json
 import re
-from typing import Mapping, Collection
+from typing import Mapping
 
 
-__all__ = (
-    "NodeType",
-    "NodeToken",
-    "NodeMixin",
-    "jsonify",
-    "NODE_PATTERN",
-)
+__all__ = ("NodeType", "NodeToken", "NodeMixin", "jsonify", "NODE_PATTERN")
 
 
 class NodeType(str, enum.Enum):
@@ -64,11 +57,10 @@ NODE_PATTERN = re.compile(
                 (
                     (
                         (?P<entrance>(enter)((?![_*\[\]]).)*)|(?P<exit>(exeunt|exit)((?![_*\[\]]).)*)
-                    ) 
+                    )
                     |
                     (?P<direction>((?![_*\[\]]).)+)
                 )
-                
             (?P<end>\]?[_*])?\s{0,2}
         )                                               |
         # Dialogue (catch-all)
@@ -95,4 +87,3 @@ class NodeMixin:
 
     def json(self):
         return jsonify(self.asdict())
-

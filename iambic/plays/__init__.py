@@ -27,7 +27,9 @@ class Corpus:
     @functools.lru_cache(maxsize=128)
     def __getitem__(self, item: str):
         if not isinstance(item, str):
-            raise TypeError(f"Corpus keys must be type str, provided {type(item)}: {item}")
+            raise TypeError(
+                f"Corpus keys must be type str, provided {type(item)}: {item}"
+            )
         seen = set()
         item = inflection.parameterize(item)
         for child in self:
