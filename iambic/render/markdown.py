@@ -15,7 +15,8 @@ def render_markdown(tree: ast.Play, with_toc: bool = False) -> str:
     Parameters
     ----------
     tree :
-        The play tree, as loaded via :func:`~iambic.parser.parse` or :func:`~iambic.loader.load`
+        The play tree, as loaded via :func:`~iambic.parser.parse` or
+        :func:`~iambic.loader.load`
     with_toc : default False
         Optionally render a TOC for your tree.
 

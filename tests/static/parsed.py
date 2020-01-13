@@ -239,5 +239,5 @@ PARSED = Play(
         Persona(index=6, text="Bar's Foo", name="Bar's Foo", short=None),
         Persona(index=12, text="BAR", name="Bar", short=None),
     ),
-    meta=MetaData(),
+    meta=Metadata(),
 )

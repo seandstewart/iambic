@@ -7,6 +7,7 @@ import typing
 from collections import defaultdict
 
 import typic
+import yaml
 from html2text import html2text
 
 from iambic.ast import (
@@ -18,6 +19,7 @@ from iambic.ast import (
     Index,
     NodeToken,
     NODE_PATTERN,
+    Metadata,
 )
 
 logger = logging.getLogger(__name__)
@@ -27,7 +29,7 @@ def _safe_resolve(
     node: typing.Optional[GenericNode], *, attr: str = None
 ) -> ResolvedNode:
     if node:
-        resolved = node.resolve()
+        resolved = node.resolved
         return getattr(resolved, attr, None) if attr else resolved
 
 
@@ -74,7 +76,8 @@ class ParserContext:
 class Parser:
     """The text parser for generating a query-able data structure from a body of text.
 
-    Text should be in valid markdown and uses the regex patterns defined in :py:class:`NodePattern`.
+    Text should be in valid markdown and uses the regex patterns defined in
+    :py:class:`NodePattern`.
     """
 
     LOCALES = frozenset((NodeType.ACT, NodeType.PROL, NodeType.EPIL, NodeType.SCENE))
@@ -89,8 +92,10 @@ class Parser:
 
     @classmethod
     @functools.lru_cache(maxsize=None, typed=True)
-    def match(cls, line: str, index: int) -> _PreNode:
-        """Take an individual line from a body of text and determine which :py:class:`NodeType` it is."""
+    def match(cls, line: str, index: int) -> typing.Optional[_PreNode]:
+        """Take an individual line from a body of text and determine which
+
+        :py:class:`NodeType` it is."""
         match = NODE_PATTERN.match(line)
         match_dict = (
             {x: y for x, y in match.groupdict().items() if y is not None}
@@ -143,7 +148,7 @@ class Parser:
     def persona_handler(ctx: ParserContext, node: _PreNode) -> ParserContext:
         """The handler for :py:class:`NodeType.PERS`"""
         node = node.to_generic()
-        resolved = node.resolve()
+        resolved = node.resolved
         if resolved.id in ctx.index:
             node: GenericNode = dataclasses.replace(
                 node, index=ctx.index[resolved.id].index
@@ -186,7 +191,9 @@ class Parser:
 
     @classmethod
     def check_direction(cls, ctx: ParserContext, node: _PreNode) -> bool:
-        """Check that a given node is not actually within a stage-direction/action/enter/exit context."""
+        """Check that a given node is not actually within a
+
+        stage-direction/action/enter/exit context."""
         add = True
         if ctx.index:
             if (
@@ -227,7 +234,43 @@ class Parser:
             else InputType.MD
         )
 
-    @functools.lru_cache(typed=True)
+    @staticmethod
+    def _check_title(text: str) -> typing.Tuple[str, str]:
+        title = NODE_PATTERN.match(text.splitlines()[0]).group("title")
+        text = text.replace(f"# {title}", "") if title else text
+        return title, text
+
+    @classmethod
+    def extract_metadata(
+        cls, text: str
+    ) -> typing.Tuple[typing.Optional[Metadata], str]:
+
+        meta = None
+        if text.startswith(NodeToken.META1):
+            text = text[len(NodeToken.META1) + 1 :]
+            token = None
+            for t in {NodeToken.META1, NodeToken.META2}:
+                _token = f"\n{t}"
+                if _token in text:
+                    token = _token
+                    break
+
+            if not token:
+                raise ValueError(
+                    f"Detected start of a Metadata block, but no end."
+                ) from None
+            ix = text.index(token)
+            fields = yaml.safe_load(text[:ix])
+            text = text[ix + len(token) :].lstrip()
+            meta = Metadata(**fields)
+        title, text = cls._check_title(text)
+        if meta and not meta.title:
+            meta.title = title
+        elif title:
+            meta = Metadata(title=title)
+        return meta, text
+
+    @functools.lru_cache()
     def parse(
         self,
         text: str,
@@ -238,15 +281,17 @@ class Parser:
     ) -> Play:
         ctx = ParserContext()
         input_type = input_type or self.guess_formatting(text)
-        text = html2text(text) if input_type is InputType.HTML else text
-        for ix, line in enumerate(x for x in text.split("\n") if x.strip()):
+        text = (html2text(text) if input_type is InputType.HTML else text).lstrip()
+        meta: typing.Optional[Metadata] = None
+        meta, text = self.extract_metadata(text)
+        for ix, line in enumerate(x for x in text.splitlines() if x.strip()):
             node = self.match(line, ix)
             add = self.check_direction(ctx, node)
             if add:
                 self.check_linecount(ctx, node)
                 handler = self.__parser_map[node.type]
                 ctx = handler(ctx=ctx, node=node)
-        return ctx.index.to_tree(title=title) if tree else ctx.index
+        return ctx.index.to_tree(meta=meta) if tree else ctx.index
 
     __call__ = parse
 

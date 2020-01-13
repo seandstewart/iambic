@@ -5,7 +5,8 @@ python:
   - "3.7"
   - "3.8"
   - "3.8-dev"
-  - "nightly"
+# Poetry is broken on 3.9...
+#  - "nightly"
 
 stages:
   - linting

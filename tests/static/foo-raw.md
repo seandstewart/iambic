@@ -1,4 +1,10 @@
-# Prologue
+---
+title: "Foo"
+...
+
+# Foo
+
+## Prologue
 
 _Enter FOO_
 
@@ -13,7 +19,7 @@ Foo!
 
 _Exeunt_
 
-# ACT I
+## ACT I
 
 ### Prologue
 
@@ -23,7 +29,7 @@ _Enter BAR_
 _[Aside]_  
 Foo.
 
-# INTERMISSION
+## INTERMISSION
 
 ### SCENE I.
 

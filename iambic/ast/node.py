@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 import dataclasses
 import functools
-from typing import ClassVar, Optional, Union, Tuple, Any, Mapping, Type, List
+from typing import ClassVar, Optional, Union, Tuple, Any, Mapping, Type, List, TypeVar
 
 import inflection
 import typic
@@ -28,32 +28,33 @@ __all__ = (
     "ChildNode",
     "NodeTree",
     "Play",
-    "MetaData",
+    "Metadata",
     "GenericNode",
     "node_coercer",
     "isnodetype",
 )
 
 
+T = TypeVar("T")
+
+
 @typic.klass(unsafe_hash=True)
 class Act(NodeMixin):
+    type: NodeType = dataclasses.field(init=False, default=NodeType.ACT)
     index: int
     text: str
     num: int
-    type: NodeType = dataclasses.field(init=False, default=NodeType.ACT)
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def id(self):
         return inflection.parameterize(f"act-{self.col}")
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def col(self):
         return roman.numeral(self.num)
 
     @classmethod
-    def from_node(cls, node: "GenericNode") -> "Act":
+    def from_node(cls: Type[T], node: "GenericNode") -> T:
         numeral = node.pieces[1]
         num = int(numeral) if numeral.isdigit() else roman.integer(numeral)
         return cls(index=node.index, text=node.match_text, num=num)
@@ -61,20 +62,18 @@ class Act(NodeMixin):
 
 @typic.klass(unsafe_hash=True)
 class Scene(NodeMixin):
+    type: NodeType = dataclasses.field(init=False, default=NodeType.SCENE)
     index: int
     text: str
     num: int
     act: str
     setting: Optional[str]
-    type: NodeType = dataclasses.field(init=False, default=NodeType.SCENE)
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def id(self) -> str:
         return inflection.parameterize(f"{self.act}-scene-{roman.numeral(self.num)}")
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def col(self) -> str:
         if self.act in {NodeType.PROL, NodeType.EPIL}:
             pre = self.act[0].upper()
@@ -83,7 +82,7 @@ class Scene(NodeMixin):
         return f"{pre}.{roman.numeral(self.num).lower()}"
 
     @classmethod
-    def from_node(cls, node: "GenericNode") -> "Scene":
+    def from_node(cls: Type[T], node: "GenericNode") -> T:
         numeral = node.pieces[1]
         num = int(numeral) if numeral.isdigit() else roman.integer(numeral)
         setting = " ".join(node.pieces[2:]) if len(node.pieces) > 2 else None
@@ -96,25 +95,23 @@ class Scene(NodeMixin):
 
 @typic.klass(unsafe_hash=True)
 class Prologue(NodeMixin):
+    type: NodeType = dataclasses.field(init=False, default=NodeType.PROL)
     index: int
     text: str
     setting: Optional[str]
     act: str = None
-    type: NodeType = dataclasses.field(init=False, default=NodeType.PROL)
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def id(self):
         return f"{self.act}-prologue" if self.act else "prologue"
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def col(self):
         pre = f"{self.act.split('-')[-1].upper()}." if self.act else ""
         return f"{pre}P"
 
     @classmethod
-    def from_node(cls, node: "GenericNode") -> "Prologue":
+    def from_node(cls: Type[T], node: "GenericNode") -> T:
         setting = " ".join(node.pieces[1:]) if len(node.pieces) > 1 else None
         return cls(
             index=node.index, text=node.match_text, setting=setting, act=node.parent
@@ -125,13 +122,11 @@ class Prologue(NodeMixin):
 class Epilogue(Prologue):
     type: NodeType = dataclasses.field(init=False, default=NodeType.EPIL)
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def id(self):
         return f"{self.act}-epilogue" if self.act else "epilogue"
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def col(self):
         pre = f"{self.act.split('-')[-1].upper()}." if self.act else ""
         return f"{pre}E"
@@ -139,44 +134,41 @@ class Epilogue(Prologue):
 
 @typic.klass(unsafe_hash=True)
 class Intermission(NodeMixin):
+    type: NodeType = dataclasses.field(init=False, default=NodeType.INTER)
     index: int
     text: str
     act: str
-    type: NodeType = dataclasses.field(init=False, default=NodeType.INTER)
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def id(self):
         return f"intermission"
 
     @classmethod
-    def from_node(cls, node: "GenericNode") -> "Intermission":
+    def from_node(cls: Type[T], node: "GenericNode") -> T:
         return cls(index=node.index, text=node.match_text, act=node.parent)
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def col(self):
         return "INT"
 
 
 @typic.klass(unsafe_hash=True)
 class Persona(NodeMixin):
+    type: NodeType = dataclasses.field(init=False, default=NodeType.PERS)
     index: int
     text: str
     name: str
     short: str = None
-    type: NodeType = dataclasses.field(init=False, default=NodeType.PERS)
 
     def __eq__(self, other) -> bool:
         return other.name == self.name if hasattr(other, "name") else False
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def id(self):
         return inflection.parameterize(self.name)
 
     @classmethod
-    def from_node(cls, node: "GenericNode") -> "Persona":
+    def from_node(cls: Type[T], node: "GenericNode") -> T:
         return cls(
             index=node.index,
             text=node.match_text,
@@ -186,19 +178,18 @@ class Persona(NodeMixin):
 
 @typic.klass(unsafe_hash=True)
 class Entrance(NodeMixin):
+    type: NodeType = dataclasses.field(init=False, default=NodeType.ENTER)
     index: int
     text: str
     scene: str
     personae: Tuple[str, ...] = dataclasses.field(default_factory=tuple)
-    type: NodeType = dataclasses.field(init=False, default=NodeType.ENTER)
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def id(self):
         return f"{self.scene}-entrance-{self.index}"
 
     @classmethod
-    def from_node(cls, node: "GenericNode") -> "Entrance":
+    def from_node(cls: Type[T], node: "GenericNode") -> T:
         return cls(index=node.index, text=node.match_text, scene=node.parent)
 
 
@@ -206,27 +197,25 @@ class Entrance(NodeMixin):
 class Exit(Entrance):
     type: NodeType = dataclasses.field(init=False, default=NodeType.EXIT)
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def id(self):
         return f"{self.scene}-exit-{self.index}"
 
 
 @typic.klass(unsafe_hash=True)
 class Action(NodeMixin):
+    type: NodeType = dataclasses.field(init=False, default=NodeType.ACTION)
     action: str
     persona: str
     scene: str
     index: int
-    type: NodeType = dataclasses.field(init=False, default=NodeType.ACTION)
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def id(self):
         return f"{self.scene}-{self.persona}-action-{self.index}"
 
     @classmethod
-    def from_node(cls, node: "GenericNode") -> "Action":
+    def from_node(cls: Type[T], node: "GenericNode") -> T:
         return cls(
             action=node.match_text,
             persona=node.parent,
@@ -237,39 +226,37 @@ class Action(NodeMixin):
 
 @typic.klass(unsafe_hash=True)
 class Direction(NodeMixin):
+    type: NodeType = dataclasses.field(init=False, default=NodeType.DIR)
     action: str
     scene: str
     index: int
     stop: bool = True
-    type: NodeType = dataclasses.field(init=False, default=NodeType.DIR)
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def id(self):
         return f"{self.scene}-direction-{self.index}"
 
     @classmethod
-    def from_node(cls, node: "GenericNode") -> "Direction":
+    def from_node(cls: Type[T], node: "GenericNode") -> T:
         return cls(action=node.match_text, scene=node.parent, index=node.index)
 
 
 @typic.klass(unsafe_hash=True)
 class Dialogue(NodeMixin):
+    type: NodeType = dataclasses.field(init=False, default=NodeType.DIAL)
     line: str
     persona: str
     scene: str
     index: int
     lineno: int
     linepart: int = 0
-    type: NodeType = dataclasses.field(init=False, default=NodeType.DIAL)
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def id(self):
         return f"{self.persona}-dialogue-{self.lineno}-{self.linepart}"
 
     @classmethod
-    def from_node(cls, node: "GenericNode") -> "Dialogue":
+    def from_node(cls: Type[T], node: "GenericNode") -> T:
         return cls(
             node.match_text,
             node.parent,
@@ -282,28 +269,25 @@ class Dialogue(NodeMixin):
 
 @typic.klass(unsafe_hash=True, delay=True)
 class Speech(NodeMixin):
+    type: NodeType = dataclasses.field(init=False, default=NodeType.SPCH)
     persona: str
     scene: str
     speech: Tuple[Union[Dialogue, Action, Direction], ...]
     index: int
-    type: NodeType = dataclasses.field(init=False, default=NodeType.SPCH)
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def linerange(self) -> Tuple[int, int]:
         linenos = sorted([x.lineno for x in self.speech if hasattr(x, "lineno")])
         return linenos[0], linenos[-1]
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def num_lines(self) -> int:
         x, y = self.linerange
         # line count starts at 1
         # a range of 1 - 1 is 1 line
         return y - (x - 1)
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def id(self) -> str:
         return (
             f"{self.scene}-{self.persona}-speech-{'-'.join(map(str, self.linerange))}"
@@ -330,13 +314,12 @@ ChildNode = ResolvedNode
 
 @typic.klass(unsafe_hash=True, delay=True)
 class NodeTree(NodeMixin):
+    type: NodeType = dataclasses.field(init=False, default=NodeType.TREE)
     node: ResolvedNode
     children: Tuple[ChildNode, ...] = dataclasses.field(default_factory=tuple)
     personae: Tuple[str, ...] = dataclasses.field(default_factory=tuple)
-    type: NodeType = dataclasses.field(init=False, default=NodeType.TREE)
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def cols(self) -> Tuple[Any, ...]:
         return tuple(
             getattr(x, "node", x).col
@@ -344,8 +327,7 @@ class NodeTree(NodeMixin):
             if isinstance(x, (NodeTree, Prologue))
         )
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def id(self) -> str:
         return f"{self.node.id}-tree"
 
@@ -368,7 +350,8 @@ ChildNode = Union[
 
 
 @typic.klass(unsafe_hash=True)
-class MetaData(NodeMixin):
+class Metadata(NodeMixin):
+    type: NodeType = dataclasses.field(init=False, default=NodeType.META)
     rights: str = "Creative Commons Non-Commercial Share Alike 3.0"
     language: str = "en-GB-emodeng"
     publisher: str = "Published w/ ❤️ using iambic - https://pypi.org/project/iambic"
@@ -378,7 +361,6 @@ class MetaData(NodeMixin):
     author: str = "William Shakespeare"
     editors: Tuple[str, ...] = dataclasses.field(default_factory=tuple)
     tags: Tuple[str, ...] = dataclasses.field(default_factory=tuple)
-    type: NodeType = dataclasses.field(init=False, default=NodeType.META)
 
     @functools.lru_cache(1)
     def asmeta(self):  # pragma: nocover
@@ -407,13 +389,12 @@ class MetaData(NodeMixin):
 
 @typic.klass(unsafe_hash=True, delay=True)
 class Play(NodeMixin):
+    type: NodeType = dataclasses.field(init=False, default=NodeType.PLAY)
     children: Tuple[NodeTree, ...] = dataclasses.field(default_factory=tuple)
     personae: Tuple[Persona, ...] = dataclasses.field(default_factory=tuple)
-    meta: MetaData = dataclasses.field(default_factory=MetaData)
-    type: NodeType = dataclasses.field(init=False, default=NodeType.PLAY)
+    meta: Metadata = dataclasses.field(default_factory=Metadata)
 
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def id(self) -> str:
         return inflection.parameterize(f"{self.meta.title}-play")
 
@@ -437,7 +418,7 @@ class GenericNode(NodeMixin):
             NodeType.EPIL: Epilogue,
             NodeType.EXIT: Exit,
             NodeType.INTER: Intermission,
-            NodeType.META: MetaData,
+            NodeType.META: Metadata,
             NodeType.PERS: Persona,
             NodeType.PLAY: Play,
             NodeType.PROL: Prologue,
@@ -462,8 +443,8 @@ class GenericNode(NodeMixin):
     act: str = None
     scene: str = None
 
-    @functools.lru_cache(maxsize=None)
-    def resolve(self) -> ResolvedNode:
+    @typic.cached_property
+    def resolved(self) -> ResolvedNode:
         """Resolve a GenericNode into a typed, "resolved" Node.
 
         Raises
@@ -479,13 +460,11 @@ class GenericNode(NodeMixin):
                 f"Valid types are: {tuple(self.__resolver_map__)}"
             )
 
-    @property
-    @functools.lru_cache(maxsize=1)
+    @typic.cached_property
     def pieces(self) -> List[str]:
         return self.match_text.split()
 
-    @property
-    @functools.lru_cache(maxsize=1)
+    @typic.cached_property
     def match_text(self) -> str:
         return self.match[self.type] if self.match else self.text
 
@@ -499,7 +478,7 @@ def node_coercer(value: Any) -> Optional[ResolvedNode]:
     if type(value) in _RESOLVABLE or value is None:
         return value
     if isinstance(value, GenericNode):
-        return value.resolve()
+        return value.resolved
 
     if not isinstance(value, Mapping):
         value = typic.coerce(value, dict)

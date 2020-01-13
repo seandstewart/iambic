@@ -13,7 +13,7 @@ from iambic.parse.text import ParserContext, _PreNode
 @pytest.mark.parametrize(
     argnames=("value", "expected"),
     argvalues=[
-        ("# ACT I", ast.NodeType.ACT),
+        ("## ACT I", ast.NodeType.ACT),
         ("### act I", ast.NodeType.ACT),
         ("### scene i", ast.NodeType.SCENE),
         ("## scene i", ast.NodeType.SCENE),
@@ -92,7 +92,7 @@ generic_scene = ast.GenericNode("scene", "Scene II", 0, 0)
                 index=0,
                 lineno=0,
                 linepart=0,
-                scene=generic_scene.resolve().id,
+                scene=generic_scene.resolved.id,
             ),
         ),
         (
@@ -104,7 +104,7 @@ generic_scene = ast.GenericNode("scene", "Scene II", 0, 0)
                 index=0,
                 lineno=0,
                 linepart=0,
-                parent=generic_act.resolve().id,
+                parent=generic_act.resolved.id,
             ),
         ),
     ],

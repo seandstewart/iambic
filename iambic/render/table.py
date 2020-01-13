@@ -126,7 +126,7 @@ class Tabulator:
                 ...
             ]
         """
-        return [tuple(table.keys())] + list(zip(*table.values()))
+        return [(*table.keys(),), *zip(*table.values())]
 
     def dataset(self, table: Table) -> tablib.Dataset:
         """Transform a table into an instance of :py:class:`tablib.Dataset`."""

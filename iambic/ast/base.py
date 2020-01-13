@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-import dataclasses
 import enum
 import functools
+
+import typic
 import ujson as json
 import re
-from typing import Mapping
 
 
 __all__ = ("NodeType", "NodeToken", "NodeMixin", "jsonify", "NODE_PATTERN")
@@ -36,6 +36,8 @@ class NodeToken(str, enum.Enum):
 
     JOIN1 = "…"
     JOIN2 = "..."
+    META1 = "---"
+    META2 = "..."
 
 
 NODE_PATTERN = re.compile(
@@ -47,6 +49,7 @@ NODE_PATTERN = re.compile(
         ^\#+\s(?P<prologue>PROLOGUE).*                  |
         ^\#+\s(?P<epilogue>EPILOGUE).*                  |
         ^\#+\s(?P<intermission>(INTERMISSION)).*        |
+        ^\#\s(?P<title>(.*)).*                          |
         # Persona
         [*_]{2}(?P<persona>(
             ([A-Z][a-zA-Z'’]*\W{0,2}([a-z]+)?\s?
@@ -56,7 +59,9 @@ NODE_PATTERN = re.compile(
             (?P<start>^[_*]\[?)?
                 (
                     (
-                        (?P<entrance>(enter)((?![_*\[\]]).)*)|(?P<exit>(exeunt|exit)((?![_*\[\]]).)*)
+                        (?P<entrance>(enter)((?![_*\[\]]).)*)
+                        |
+                        (?P<exit>(exeunt|exit)((?![_*\[\]]).)*)
                     )
                     |
                     (?P<direction>((?![_*\[\]]).)+)
@@ -71,19 +76,14 @@ NODE_PATTERN = re.compile(
 )
 
 
-jsonify = functools.partial(json.dumps, indent=4)
+jsonify = functools.partial(json.dumps, indent=2)
 
 
 class NodeMixin:
-    @property
-    @functools.lru_cache(1)
+    @typic.cached_property
     def klass(self):
         return type(self).__name__.lower()
 
-    def asdict(self) -> Mapping:
-        dikt = dataclasses.asdict(self)
-        dikt["type"] = self.type
-        return dikt
-
+    @typic.cached_property
     def json(self):
-        return jsonify(self.asdict())
+        return jsonify(self.primitive())
