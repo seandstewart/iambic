@@ -47,8 +47,9 @@ class TOC:
 class HTMLRenderer:
     """The Renderer for an HTML document.
 
-    This is a callable class which accepts a :class:`ast.PlayTree` and generates an HTML document with attached
-    meta-data for easy querying and CSS styling (not provided by default).
+    This is a callable class which accepts a :class:`ast.PlayTree` and generates an
+    HTML document with attached metadata for easy querying and CSS styling (not
+    provided by default).
     """
 
     tag = HTMLTag
@@ -61,8 +62,9 @@ class HTMLRenderer:
     ):
         """Render a "speech" node.
 
-        A :class:`ast.SpeechNode` is a container for all lines of dialogue, character action, or stage direction which
-        can be attributed to an individual section of speech for a character.
+        A :class:`ast.SpeechNode` is a container for all lines of dialogue, character
+        action, or stage direction which can be attributed to an individual section of
+        speech for a character.
 
         Parameters
         ----------
@@ -107,13 +109,14 @@ class HTMLRenderer:
         *,
         as_act: bool = False,
     ):
-        """Render a "scene". This could be either a :class:`ast.NodeTree` or :class:`ast.Intermission`
+        """Render a "scene". This could be either a :class:`ast.NodeTree` or
+        :class:`ast.Intermission`
 
         Parameters
         ----------
         scene
-            A child of the higher-level "act" -
-            which could be a :class:`ast.Act`, :class:`ast.Epilogue`, or :class:`ast.Prologue`
+            A child of the higher-level "act" - which could be a :class:`ast.Act`,
+            :class:`ast.Epilogue`, or :class:`ast.Prologue`
         doc
             The initialized document object.
         personae
@@ -122,13 +125,13 @@ class HTMLRenderer:
             Optionally render this scene at the "act" level (:class:`HTMLTag.H1`)
         """
         if isinstance(scene, ast.Intermission):
-            with doc.tag(self.tag.H1.value, klass=scene.klass, id=scene.id):
+            with doc.tag(self.tag.H2.value, klass=scene.klass, id=scene.id):
                 doc.text(scene.text)
                 doc.data(index=scene.index)
         else:
             text = scene.node.text
             node: ast.Scene = scene.node
-            tag = self.tag.H1.value if as_act else self.tag.H3.value
+            tag = self.tag.H2.value if as_act else self.tag.H3.value
             with doc.tag(tag, klass=node.klass, id=node.id):
                 doc.text(text)
                 doc.data(index=node.index)
@@ -152,7 +155,7 @@ class HTMLRenderer:
             if isinstance(act.node, (ast.Epilogue, ast.Prologue)):
                 self.render_scene(act, doc, persona_map, as_act=True)
                 continue
-            with doc.tag(self.tag.H1.value, klass=act.node.klass, id=act.node.id):
+            with doc.tag(self.tag.H2.value, klass=act.node.klass, id=act.node.id):
                 doc.data(index=act.node.index)
                 doc.text(act.node.text)
             for scene in act.children:
@@ -219,7 +222,8 @@ class HTMLRenderer:
         Parameters
         ----------
         tree :
-            The play tree, as loaded via :func:`~iambic.parser.parse` or :func:`~iambic.loader.load`
+            The play tree, as loaded via :func:`~iambic.parser.parse` or
+            :func:`~iambic.loader.load`
         as_text : default True
             Optionally return the raw :class:`yattag.SimpleDoc` if set to False.
         with_toc : default True

@@ -1,4 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 # flake8: noqa
-from . import ast, parse, plays, render, roman
+import typic as __
+from docs import plays
+from . import ast, parse, render, roman
+
+SCHEMA = __.schemas()

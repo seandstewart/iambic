@@ -82,7 +82,8 @@ class RomanNumeral(int, enum.Enum):
             assert NUMERAL_PATTERN.search(num) or num == "MMMMM"
         except AssertionError:
             raise TypeError(
-                f"Input must be a valid Roman Numeral no greater than <MMMMM>. Provided: <{num}>"
+                f"Input must be a valid Roman Numeral no greater than <MMMMM>. "
+                f"Provided: <{num}>"
             )
 
         result = 0

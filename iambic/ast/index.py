@@ -14,7 +14,6 @@ from typing import (
     ValuesView,
 )
 
-
 import iambic.ast.node as ast
 
 __all__ = ("Index",)
@@ -46,18 +45,22 @@ class Index(Dict[str, ast.ResolvedNode]):
             return self.__type_map[item]
         return super().__getitem__(item)
 
+    def __contains__(self, item: IndexKeyType) -> bool:
+        if isinstance(item, ast.NodeType):
+            return item in self.__type_map
+        return super().__contains__(item)
+
     def get(self, k: IndexKeyType, default=None):
         default = default or {}
-        try:
-            return self.__getitem__(k)
-        except KeyError:
-            return default
+        if k in self:
+            return self[k]
+        return default
 
     def get_values(self, k: ast.NodeType) -> ValuesView[ast.ResolvedNode]:
         return self.get(k, default={}).values()
 
     def add(self, node: ast.GenericNode):
-        resolved = node.resolve()
+        resolved = node.resolved
         self[resolved.id] = resolved
         self.generic[resolved.id] = node
         self.__type_map[resolved.type][resolved.id] = resolved
@@ -129,7 +132,8 @@ class Index(Dict[str, ast.ResolvedNode]):
             if node.scene != scene.id:
                 spch = ast.Speech(persona.id, scene.id, tuple(speech), speech[0].index)
                 speeches.append(spch)
-                # Directions aren't directly associated to a persona, so do not have the persona attr.
+                # Directions aren't directly associated to a persona,
+                # so do not have the persona attr.
                 # BUT they can occur within speeches, so we still have to track them all.
                 persona = None if node.type == ast.NodeType.DIR else self[node.persona]
                 scene, persona, speech = self[node.scene], persona, [node]
@@ -152,7 +156,7 @@ class Index(Dict[str, ast.ResolvedNode]):
                 persona, scene, speech = self[node.persona], self[node.scene], [node]
                 continue
             # If we've set a persona and we come across a Direction,
-            # we can be reasonably sure this direction should be associated to this speech.
+            # we can be reasonably sure this dir should be associated to this speech.
             if node.type == ast.NodeType.DIR and persona:
                 speech.append(node)
         # Once we've exhausted all members, it's possible we have one speech left.
@@ -211,7 +215,7 @@ class Index(Dict[str, ast.ResolvedNode]):
         acts = list(sorted(acts, key=self.node_sort))
         return acts
 
-    def to_tree(self, title: str = None) -> ast.Play:
+    def to_tree(self, meta: ast.Metadata = None) -> ast.Play:
         # Resolve the presence of personae in entrances/exits
         self.resolve_presence()
         # Build the Act-level trees
@@ -219,7 +223,7 @@ class Index(Dict[str, ast.ResolvedNode]):
         # Build the Play-level trees
         acts = self.get_act_trees(scenes)
         # Put it all together
-        play = ast.Play(tuple(acts), tuple(self.personae), ast.MetaData(title=title))
+        play = ast.Play((*acts,), (*self.personae,), meta=(meta or ast.Metadata()))
         return play
 
     @staticmethod
