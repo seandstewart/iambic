@@ -83,7 +83,3 @@ class NodeMixin:
     @typic.cached_property
     def klass(self):
         return type(self).__name__.lower()
-
-    @typic.cached_property
-    def json(self):
-        return jsonify(self.primitive())

@@ -16,5 +16,5 @@ class InputType(str, enum.Enum):
     DATA = "data"
 
 
-typic.register(coercer=node_coercer, check=isnodetype)
+typic.register(deserializer=node_coercer, check=isnodetype)
 typic.resolve()
