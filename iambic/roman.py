@@ -53,13 +53,16 @@ class RomanNumeral(int, enum.Enum):
             num = int(num)
             assert num <= 5000
         except (AssertionError, ValueError):
-            raise TypeError(f"Input must be a valid integer <=5000. Provided: <{num}>")
+            raise ValueError(
+                f"Input must be a valid integer <=5000. Provided: <{num}>"
+            ) from None
 
         result = ""
         for notation in cls:
-            while num >= notation:
-                result += notation.name
-                num -= notation
+            name, value = notation.name, notation.value
+            while num >= value:
+                result += name
+                num -= value
 
         return result
 
@@ -81,10 +84,10 @@ class RomanNumeral(int, enum.Enum):
             assert num
             assert NUMERAL_PATTERN.search(num) or num == "MMMMM"
         except AssertionError:
-            raise TypeError(
+            raise ValueError(
                 f"Input must be a valid Roman Numeral no greater than <MMMMM>. "
                 f"Provided: <{num}>"
-            )
+            ) from None
 
         result = 0
         index = 0

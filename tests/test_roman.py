@@ -22,10 +22,10 @@ def test_roman_numeral(value, expected):
 
 
 def test_invalid_roman_numeral():
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         roman.integer("MMMMMI")
 
 
 def test_invalid_roman_integer():
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         roman.numeral(5001)
