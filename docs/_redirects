@@ -1,0 +1,2 @@
+# Redirect default Netlify subdomain to primary domain
+https://iambic.netlify.com/* https://iambic.seandstewart.io/:splat 301!
