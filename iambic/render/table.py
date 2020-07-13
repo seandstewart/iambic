@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 import enum
-from typing import List, Dict, Hashable, Tuple
+from typing import List, Dict, Hashable, Tuple, Union, Type
 
 import tablib
 
@@ -17,7 +17,7 @@ class Column(str, enum.Enum):
     """Predefined column names"""
 
     CHAR = "Dramatis Personae"
-    APP = "First Appearance"
+    APPR = "First Appearance"
     CLINE = "Lines"
     PLINE = "Player Lines"
     PLAYR = "Player"
@@ -26,10 +26,18 @@ class Column(str, enum.Enum):
 
 
 class Marker(str, enum.Enum):
-    """The character to use when marking a character as present in a scene."""
+    """The character to use when marking a persona as present in a scene."""
 
     SPEAK = "X"
     PRES = "O"
+    NONE = ""
+
+
+class RichMarker(str, enum.Enum):
+    """The rich text character to use when marking a persona as present in a scene."""
+
+    SPEAK = "💬"
+    PRES = "👁️‍🗨️"
     NONE = ""
 
 
@@ -47,28 +55,42 @@ class Tabulator:
 
     """
 
-    @staticmethod
     def _tabulate_scene(
+        self,
         scene: ast.NodeTree,
         node_column: List[str],
         cline_column: List[int],
         char_index: Dict[str, int],
         personae: Dict[str, ast.Persona],
+        links: bool,
+        marker_type: Type[Union[Marker, RichMarker]],
     ):
         for child in scene.children:
+            marker = (
+                marker_type.SPEAK
+                if child.type == ast.NodeType.SPCH
+                else marker_type.PRES
+            )
+            entry = self.link(marker, child) if links else marker.value
             if child.type == ast.NodeType.SPCH:
                 persona = personae[child.persona]
                 index = char_index[persona.name]
-                node_column[index] = Marker.SPEAK.value
+                node_column[index] = entry
                 cline_column[index] += child.num_lines
             elif child.type == ast.NodeType.ENTER:
                 for pers in child.personae:
                     persona = personae[pers]
                     index = char_index[persona.name]
                     if not node_column[index]:
-                        node_column[index] = Marker.PRES.value
+                        node_column[index] = entry
 
-    def tabulate(self, play: ast.Play) -> Table:
+    @staticmethod
+    def link(marker: Marker, node: ast.ChildNode) -> str:
+        return f"[{marker.value}](#{node.id})"
+
+    def tabulate(
+        self, play: ast.Play, *, links: bool = False, rich: bool = False
+    ) -> Table:
         """Generate a table for this play.
 
         The table is returned in the form of a Mapping.
@@ -81,11 +103,13 @@ class Tabulator:
                 ...
             }
         """
-        table = dict()
-        table[Column.CHAR.value] = list(x.name for x in play.personae)
-        table[Column.APP.value] = list(x.index for x in play.personae)
+        marker_type = RichMarker if rich else Marker
+        table = {
+            Column.CHAR.value: [x.name for x in play.personae],
+            Column.APPR.value: [x.index for x in play.personae],
+            Column.CLINE.value: [0 for _ in play.personae],
+        }
         char_column = table[Column.CHAR.value]
-        table[Column.CLINE.value] = list(0 for _ in char_column)
         cline_column = table[Column.CLINE.value]
         char_index = {y: x for x, y in enumerate(char_column)}
         personae = {x.id: x for x in play.personae}
@@ -100,7 +124,7 @@ class Tabulator:
                 children = [act]
             for scene in children:
                 node = scene.node if isinstance(scene, ast.NodeTree) else scene
-                table[node.col] = list(Marker.NONE.value for _ in char_column)
+                table[node.col] = [marker_type.NONE.value for _ in char_column]
                 if isinstance(scene, ast.NodeTree):
                     self._tabulate_scene(
                         scene=scene,
@@ -108,6 +132,8 @@ class Tabulator:
                         cline_column=cline_column,
                         char_index=char_index,
                         personae=personae,
+                        links=links,
+                        marker_type=marker_type,
                     )
 
         return table
@@ -134,8 +160,10 @@ class Tabulator:
         headers = pivot.pop(0)
         return tablib.Dataset(*pivot, headers=headers)
 
-    def __call__(self, play: ast.Play) -> tablib.Dataset:
-        table = self.tabulate(play)
+    def __call__(
+        self, play: ast.Play, *, links: bool = False, rich: bool = False
+    ) -> tablib.Dataset:
+        table = self.tabulate(play, links=links, rich=rich)
         return self.dataset(table)
 
 
