@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "iambic"
 packages = [{include = "iambic"}, {include = "docs"}]
-version = "1.1.0"
+version = "2.0.0"
 description = "Data extraction and rendering library for Shakespearean text."
 authors = ["Sean Stewart <sean_stewart@me.com>"]
 license = "MIT"
@@ -32,7 +32,7 @@ include = ["*.md", "*.json"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-typical = {version = "^2.0.0", allow-prereleases = true}
+typical = "^2.0.27"
 yattag = "^1.13"
 html2text = "^2020.1.16"
 tablib = "^1.1.0"
@@ -42,7 +42,6 @@ ujson = "^2.0"
 pytest = "^5.3"
 pytest-cov = "^2.8"
 pre-commit = "^1.20"
-black = {version = "^18.3-alpha.0", allow-prereleases = true}
 flake8 = "^3.7.9"
 mkdocs-awesome-pages-plugin = "^2.2.0"
 mkdocs = "^1.0.4"
@@ -50,6 +49,7 @@ mypy = "^0.761"
 mkdocs-material = "^4.6.0"
 pymdown-extensions = "^6.2.1"
 fontawesome-markdown = "^0.2.6"
+black = "^19.10b0"
 
 [build-system]
 requires = ["poetry>=0.12"]

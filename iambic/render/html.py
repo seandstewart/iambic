@@ -84,7 +84,7 @@ class HTMLRenderer:
         )
         doc.stag(self.tag.BR.value)
         last_line = None
-        for line in speech.speech:
+        for line in speech.body:
             with doc.tag(self.tag.SPAN.value, klass=line.klass, id=line.id):
                 doc.data(index=line.index)
                 if isinstance(line, ast.Action):
@@ -103,7 +103,7 @@ class HTMLRenderer:
 
     def render_scene(
         self,
-        scene: ast.NodeTree,
+        scene: ast.ActNodeT,
         doc: yattag.SimpleDoc,
         personae: Mapping[str, ast.Persona],
         *,
@@ -129,36 +129,42 @@ class HTMLRenderer:
                 doc.text(scene.text)
                 doc.data(index=scene.index)
         else:
-            text = scene.node.text
-            node: ast.Scene = scene.node
+            text = scene.text
             tag = self.tag.H2.value if as_act else self.tag.H3.value
-            with doc.tag(tag, klass=node.klass, id=node.id):
+            with doc.tag(tag, klass=scene.klass, id=scene.id):
                 doc.text(text)
-                doc.data(index=node.index)
-            for line in scene.children:
-                with doc.tag(self.tag.P.value, klass=line.klass, id=line.id):
-                    if type(line) in {ast.Direction, ast.Entrance, ast.Exit}:
+                doc.data(index=scene.index)
+            node: ast.SceneNodeT
+            for node in scene.body:  # type: ignore
+                with doc.tag(self.tag.P.value, klass=node.klass, id=node.id):
+                    if isinstance(node, (ast.Direction, ast.Exit, ast.Entrance)):
                         with doc.tag(self.tag.EM.value):
                             doc.text(
-                                line.action
-                                if isinstance(line, ast.Direction)
-                                else line.text
+                                node.action
+                                if isinstance(node, ast.Direction)
+                                else node.text
                             )
-                            doc.data(index=line.index)
+                            doc.data(index=node.index)
                         continue
-                    self.render_speech(line, personae, doc)
+                    self.render_speech(node, personae, doc)
 
     def render_play(self, tree: ast.Play) -> yattag.SimpleDoc:
         doc = yattag.SimpleDoc()
         persona_map = {x.id: x for x in tree.personae}
-        for act in tree.children:
-            if isinstance(act.node, (ast.Epilogue, ast.Prologue)):
+        for act in tree.body:
+            if isinstance(act, (ast.Prologue, ast.Epilogue)) and not act.as_act:
                 self.render_scene(act, doc, persona_map, as_act=True)
                 continue
-            with doc.tag(self.tag.H2.value, klass=act.node.klass, id=act.node.id):
-                doc.data(index=act.node.index)
-                doc.text(act.node.text)
-            for scene in act.children:
+            with doc.tag(self.tag.H2.value, klass=act.klass, id=act.id):
+                doc.data(index=act.index)
+                doc.text(act.text)
+            scene: ast.ActNodeT
+            for scene in act.body:  # type: ignore
+                if isinstance(scene, ast.Intermission):
+                    with doc.tag(self.tag.H2.value, klass=scene.klass, id=scene.id):
+                        doc.data(index=scene.index)
+                        doc.text(scene.text)
+                    continue
                 self.render_scene(scene, doc, persona_map)
         return doc
 
@@ -172,20 +178,18 @@ class HTMLRenderer:
         ):
             toc.line(TOC.tag.value, TOC.title)
             with toc.tag(self.tag.OL.value):
-                for act in tree.children:
+                for act in tree.body:
                     with toc.tag(self.tag.LI.value):
-                        toc.line(
-                            self.tag.A.value, act.node.text, href=f"#{act.node.id}"
-                        )
-                        if isinstance(act.node, ast.Act):
+                        toc.line(self.tag.A.value, act.text, href=f"#{act.id}")
+                        if isinstance(act, ast.Act) or act.as_act:
                             with toc.tag(self.tag.OL.value):
-                                for scene in act.children:
+                                scene: ast.ActNodeT
+                                for scene in act.body:  # type: ignore
                                     with toc.tag(self.tag.LI.value):
-                                        node = getattr(scene, "node", scene)
                                         toc.line(
                                             self.tag.A.value,
-                                            node.text,
-                                            href=f"#{node.id}",
+                                            scene.text,
+                                            href=f"#{scene.id}",
                                         )
         return toc
 

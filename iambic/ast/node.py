@@ -1,11 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-import dataclasses
 import functools
-from typing import ClassVar, Optional, Union, Tuple, Any, Mapping, Type, List, TypeVar
+from operator import attrgetter
+from typing import (
+    ClassVar,
+    Optional,
+    Union,
+    Tuple,
+    Any,
+    Mapping,
+    Type,
+    List,
+    TypeVar,
+    NewType,
+    Iterable,
+)
 
-import inflection
 import typic
+from inflection import parameterize, titleize
 
 from iambic import roman
 from .base import NodeType, NodeMixin
@@ -13,9 +25,14 @@ from .base import NodeType, NodeMixin
 
 __all__ = (
     "Act",
+    "ActBodyT",
+    "ActNodeT",
     "Scene",
+    "SceneBodyT",
+    "SceneNodeT",
     "Prologue",
     "Epilogue",
+    "LogueBodyT",
     "Intermission",
     "Persona",
     "Entrance",
@@ -24,37 +41,54 @@ __all__ = (
     "Direction",
     "Dialogue",
     "Speech",
-    "ResolvedNode",
-    "ChildNode",
-    "NodeTree",
+    "SpeechNodeT",
+    "SpeechBodyT",
+    "ResolvedNodeT",
     "Play",
+    "PlayNodeT",
+    "PlayBodyT",
     "Metadata",
     "GenericNode",
-    "node_coercer",
+    "NodeID",
+    "NodeType",
+    "node_deserializer",
+    "log_deserializer",
     "isnodetype",
 )
 
 
 T = TypeVar("T")
+NodeID = NewType("NodeID", str)
+indexgetter = attrgetter("index")
 
 
-@typic.klass(unsafe_hash=True)
+_T = TypeVar("_T")
+
+
+def sort_body(body: Iterable[_T]) -> Tuple[_T, ...]:
+    return tuple(sorted(body, key=indexgetter))
+
+
+@typic.klass(unsafe_hash=True, order=True)
 class Act(NodeMixin):
-    type: NodeType = dataclasses.field(init=False, default=NodeType.ACT)
+    """A representation of a single Act in a Play."""
+
+    type: ClassVar[NodeType] = NodeType.ACT
     index: int
     text: str
     num: int
+    body: "ActBodyT" = typic.field(compare=False, hash=False, default=())
 
     @typic.cached_property
-    def id(self):
-        return inflection.parameterize(f"act-{self.col}")
+    def id(self) -> NodeID:
+        return NodeID(parameterize(f"{self.type.lower()}-{self.col}"))
 
     @typic.cached_property
     def col(self):
         return roman.numeral(self.num)
 
     @classmethod
-    def from_node(cls: Type[T], node: "GenericNode") -> T:
+    def from_node(cls, node: "GenericNode") -> "Act":
         numeral = node.pieces[1]
         num = int(numeral) if numeral.isdigit() else roman.integer(numeral)
         return cls(index=node.index, text=node.match_text, num=num)
@@ -62,56 +96,84 @@ class Act(NodeMixin):
 
 @typic.klass(unsafe_hash=True)
 class Scene(NodeMixin):
-    type: NodeType = dataclasses.field(init=False, default=NodeType.SCENE)
+    """A representation of a single Scene in a play."""
+
+    type: ClassVar[NodeType] = NodeType.SCENE
     index: int
     text: str
     num: int
-    act: str
-    setting: Optional[str]
+    setting: Optional[str] = None
+    act: Optional[NodeID] = None
+    body: "SceneBodyT" = typic.field(compare=False, hash=False, default=())
+    personae: "PersonaeIDT" = typic.field(compare=False, hash=False, default=())
 
     @typic.cached_property
-    def id(self) -> str:
-        return inflection.parameterize(f"{self.act}-scene-{roman.numeral(self.num)}")
+    def id(self) -> NodeID:
+        return NodeID(parameterize(f"{self.act}-{self.type.lower()}-{self.col}"))
 
     @typic.cached_property
     def col(self) -> str:
-        if self.act in {NodeType.PROL, NodeType.EPIL}:
-            pre = self.act[0].upper()
-        else:
-            pre = self.act.split("-")[-1].upper()
+        pre = ""
+        if self.act:
+            if NodeType.PROL in self.act or NodeType.EPIL in self.act:
+                pre = self.act[0].upper()
+            else:
+                pre = self.act.split("-")[-1].upper()
         return f"{pre}.{roman.numeral(self.num).lower()}"
 
     @classmethod
-    def from_node(cls: Type[T], node: "GenericNode") -> T:
+    def from_node(cls, node: "GenericNode") -> "Scene":
         numeral = node.pieces[1]
         num = int(numeral) if numeral.isdigit() else roman.integer(numeral)
         setting = " ".join(node.pieces[2:]) if len(node.pieces) > 2 else None
         parent = node.parent or node.act or node.scene
-        parent = parent.resolve() if hasattr(parent, "resolve") else parent
+        if parent is None:
+            raise ValueError(f"Can't build {cls.__name__!r} from node: {node}")
         return cls(
-            index=node.index, text=node.match_text, num=num, act=parent, setting=setting
+            index=node.index,
+            text=node.match_text,
+            num=num,
+            act=parent,
+            setting=setting,
         )
 
 
 @typic.klass(unsafe_hash=True)
 class Prologue(NodeMixin):
-    type: NodeType = dataclasses.field(init=False, default=NodeType.PROL)
+    """A representation of a single Prologue in a play.
+
+    Notes:
+        Prologues (and Epilogues) may have the body structure of either an Act or Scene.
+    """
+
+    type: ClassVar[NodeType] = NodeType.PROL
     index: int
     text: str
-    setting: Optional[str]
-    act: str = None
+    setting: Optional[str] = None
+    act: Optional[NodeID] = None
+    body: "LogueBodyT" = typic.field(compare=False, hash=False, default=())
+    personae: "PersonaeIDT" = typic.field(compare=False, hash=False, default=())
+    as_act: bool = typic.field(init=False)
+
+    def __post_init__(self):
+        # If the body conforms to the `ActBodyT` type, it should be treated as such.
+        self.as_act = bool(
+            self.body
+            and isinstance(self.body[0], (Scene, Intermission, Epilogue, Prologue))
+        )
 
     @typic.cached_property
-    def id(self):
-        return f"{self.act}-prologue" if self.act else "prologue"
+    def id(self) -> NodeID:
+        pre = f"{self.act}-" if self.act else ""
+        return NodeID(f"{pre}{self.type.lower()}-{self.index}")
 
     @typic.cached_property
     def col(self):
         pre = f"{self.act.split('-')[-1].upper()}." if self.act else ""
-        return f"{pre}P"
+        return f"{pre}{self.type.value[0].upper()}"
 
     @classmethod
-    def from_node(cls: Type[T], node: "GenericNode") -> T:
+    def from_node(cls, node: "GenericNode") -> "Prologue":
         setting = " ".join(node.pieces[1:]) if len(node.pieces) > 1 else None
         return cls(
             index=node.index, text=node.match_text, setting=setting, act=node.parent
@@ -120,31 +182,32 @@ class Prologue(NodeMixin):
 
 @typic.klass(unsafe_hash=True)
 class Epilogue(Prologue):
-    type: NodeType = dataclasses.field(init=False, default=NodeType.EPIL)
+    """A representation of a single Epilogue in a play.
 
-    @typic.cached_property
-    def id(self):
-        return f"{self.act}-epilogue" if self.act else "epilogue"
+    Notes:
+        Epilogues (and Prologues) may have the body structure of either an Act or Scene.
+    """
 
-    @typic.cached_property
-    def col(self):
-        pre = f"{self.act.split('-')[-1].upper()}." if self.act else ""
-        return f"{pre}E"
+    type: ClassVar[NodeType] = NodeType.EPIL
 
 
 @typic.klass(unsafe_hash=True)
 class Intermission(NodeMixin):
-    type: NodeType = dataclasses.field(init=False, default=NodeType.INTER)
+    """A representation of an Intermission in a play."""
+
+    type: ClassVar[NodeType] = NodeType.INTER
     index: int
     text: str
-    act: str
+    act: NodeID
 
     @typic.cached_property
-    def id(self):
-        return f"intermission"
+    def id(self) -> NodeID:
+        return NodeID("intermission")
 
     @classmethod
-    def from_node(cls: Type[T], node: "GenericNode") -> T:
+    def from_node(cls, node: "GenericNode") -> "Intermission":
+        if not node.parent:
+            raise ValueError(f"Can't build {cls.__name__!r} from node: {node}")
         return cls(index=node.index, text=node.match_text, act=node.parent)
 
     @typic.cached_property
@@ -154,68 +217,74 @@ class Intermission(NodeMixin):
 
 @typic.klass(unsafe_hash=True)
 class Persona(NodeMixin):
-    type: NodeType = dataclasses.field(init=False, default=NodeType.PERS)
+    """A representation of a single character in a Play."""
+
+    type: ClassVar[NodeType] = NodeType.PERS
     index: int
     text: str
     name: str
-    short: str = None
+    short: Optional[str] = None
 
     def __eq__(self, other) -> bool:
         return other.name == self.name if hasattr(other, "name") else False
 
     @typic.cached_property
-    def id(self):
-        return inflection.parameterize(self.name)
+    def id(self) -> NodeID:
+        return NodeID(parameterize(self.name))
 
     @classmethod
-    def from_node(cls: Type[T], node: "GenericNode") -> T:
+    def from_node(cls, node: "GenericNode") -> "Persona":
         return cls(
-            index=node.index,
-            text=node.match_text,
-            name=inflection.titleize(node.match_text),
+            index=node.index, text=node.match_text, name=titleize(node.match_text),
         )
 
 
 @typic.klass(unsafe_hash=True)
 class Entrance(NodeMixin):
-    type: NodeType = dataclasses.field(init=False, default=NodeType.ENTER)
+    """A representation of an entrance for character(s) in a Scene."""
+
+    type: ClassVar[NodeType] = NodeType.ENTER
     index: int
     text: str
-    scene: str
-    personae: Tuple[str, ...] = dataclasses.field(default_factory=tuple)
+    scene: NodeID
+    personae: "PersonaeIDT" = ()
 
     @typic.cached_property
-    def id(self):
-        return f"{self.scene}-entrance-{self.index}"
+    def id(self) -> NodeID:
+        return NodeID(f"{self.scene}-{self.type.lower()}-{self.index}")
 
     @classmethod
-    def from_node(cls: Type[T], node: "GenericNode") -> T:
+    def from_node(cls, node: "GenericNode") -> "Entrance":
+        if not node.parent:
+            raise ValueError(f"Can't build {cls.__name__!r} from node: {node}")
         return cls(index=node.index, text=node.match_text, scene=node.parent)
 
 
 @typic.klass(unsafe_hash=True)
 class Exit(Entrance):
-    type: NodeType = dataclasses.field(init=False, default=NodeType.EXIT)
+    """A representation of an exit for character(s) in a Scene."""
 
-    @typic.cached_property
-    def id(self):
-        return f"{self.scene}-exit-{self.index}"
+    type: ClassVar[NodeType] = NodeType.EXIT
 
 
 @typic.klass(unsafe_hash=True)
 class Action(NodeMixin):
-    type: NodeType = dataclasses.field(init=False, default=NodeType.ACTION)
+    """A representation of a stage direction related to a specific character."""
+
+    type: ClassVar[NodeType] = NodeType.ACTION
     action: str
-    persona: str
-    scene: str
+    persona: NodeID
+    scene: NodeID
     index: int
 
     @typic.cached_property
-    def id(self):
-        return f"{self.scene}-{self.persona}-action-{self.index}"
+    def id(self) -> NodeID:
+        return NodeID(f"{self.scene}-{self.persona}-{self.type.lower()}-{self.index}")
 
     @classmethod
-    def from_node(cls: Type[T], node: "GenericNode") -> T:
+    def from_node(cls, node: "GenericNode") -> "Action":
+        if not node.parent or not node.scene:
+            raise ValueError(f"Can't build {cls.__name__!r} from node: {node}")
         return cls(
             action=node.match_text,
             persona=node.parent,
@@ -226,58 +295,73 @@ class Action(NodeMixin):
 
 @typic.klass(unsafe_hash=True)
 class Direction(NodeMixin):
-    type: NodeType = dataclasses.field(init=False, default=NodeType.DIR)
+    """A representation of a stage direction."""
+
+    type: ClassVar[NodeType] = NodeType.DIR
     action: str
-    scene: str
+    scene: NodeID
     index: int
     stop: bool = True
 
     @typic.cached_property
-    def id(self):
-        return f"{self.scene}-direction-{self.index}"
+    def id(self) -> NodeID:
+        return NodeID(f"{self.scene}-{self.type.lower()}-{self.index}")
 
     @classmethod
-    def from_node(cls: Type[T], node: "GenericNode") -> T:
+    def from_node(cls, node: "GenericNode") -> "Direction":
+        if not node.parent:
+            raise ValueError(f"Can't build {cls.__name__!r} from node: {node}")
         return cls(action=node.match_text, scene=node.parent, index=node.index)
 
 
 @typic.klass(unsafe_hash=True)
 class Dialogue(NodeMixin):
-    type: NodeType = dataclasses.field(init=False, default=NodeType.DIAL)
+    """A representation of a line of dialogue for a character in a scene."""
+
+    type: ClassVar[NodeType] = NodeType.DIAL
     line: str
-    persona: str
-    scene: str
+    persona: NodeID
+    scene: NodeID
     index: int
     lineno: int
     linepart: int = 0
 
     @typic.cached_property
-    def id(self):
-        return f"{self.persona}-dialogue-{self.lineno}-{self.linepart}"
+    def id(self) -> NodeID:
+        return NodeID(
+            f"{self.persona}-{self.type.lower()}-{self.lineno}-{self.linepart}"
+        )
 
     @classmethod
-    def from_node(cls: Type[T], node: "GenericNode") -> T:
+    def from_node(cls, node: "GenericNode") -> "Dialogue":
+        if None in {node.parent, node.scene, node.lineno, node.linepart}:
+            raise ValueError(f"Can't build {cls.__name__!r} from node: {node}")
         return cls(
-            node.match_text,
-            node.parent,
-            node.scene,
-            index=node.index,
-            lineno=node.lineno,
-            linepart=node.linepart,
+            line=node.match_text,
+            persona=node.parent,  # type: ignore
+            scene=node.scene,  # type: ignore
+            index=node.index,  # type: ignore
+            lineno=node.lineno,  # type: ignore
+            linepart=node.linepart,  # type: ignore
         )
 
 
-@typic.klass(unsafe_hash=True, delay=True)
+@typic.klass(unsafe_hash=True)
 class Speech(NodeMixin):
-    type: NodeType = dataclasses.field(init=False, default=NodeType.SPCH)
-    persona: str
-    scene: str
-    speech: Tuple[Union[Dialogue, Action, Direction], ...]
+    """A representation of an unbroken piece of dialogue related to a single character."""
+
+    type: ClassVar[NodeType] = NodeType.SPCH
+    persona: NodeID
+    scene: NodeID
+    body: "SpeechBodyT"
     index: int
+
+    def __post_init__(self):
+        self.body = sort_body(self.body)
 
     @typic.cached_property
     def linerange(self) -> Tuple[int, int]:
-        linenos = sorted([x.lineno for x in self.speech if hasattr(x, "lineno")])
+        linenos = sorted((x.lineno for x in self.body if isinstance(x, Dialogue)))
         return linenos[0], linenos[-1]
 
     @typic.cached_property
@@ -288,79 +372,27 @@ class Speech(NodeMixin):
         return y - (x - 1)
 
     @typic.cached_property
-    def id(self) -> str:
-        return (
-            f"{self.scene}-{self.persona}-speech-{'-'.join(map(str, self.linerange))}"
+    def id(self) -> NodeID:
+        return NodeID(
+            f"{self.scene}-{self.persona}-{self.type.lower()}-"
+            f"{'{0}-{1}'.format(*self.linerange)}"
         )
-
-
-ResolvedNode = Union[
-    Act,
-    Scene,
-    Prologue,
-    Epilogue,
-    Persona,
-    Entrance,
-    Exit,
-    Action,
-    Direction,
-    Dialogue,
-    Speech,
-    Intermission,
-]
-
-ChildNode = ResolvedNode
-
-
-@typic.klass(unsafe_hash=True, delay=True)
-class NodeTree(NodeMixin):
-    type: NodeType = dataclasses.field(init=False, default=NodeType.TREE)
-    node: ResolvedNode
-    children: Tuple[ChildNode, ...] = dataclasses.field(default_factory=tuple)
-    personae: Tuple[str, ...] = dataclasses.field(default_factory=tuple)
-
-    @typic.cached_property
-    def cols(self) -> Tuple[Any, ...]:
-        return tuple(
-            getattr(x, "node", x).col
-            for x in self.children
-            if isinstance(x, (NodeTree, Prologue))
-        )
-
-    @typic.cached_property
-    def id(self) -> str:
-        return f"{self.node.id}-tree"
-
-
-ChildNode = Union[
-    Act,
-    Scene,
-    Prologue,
-    Epilogue,
-    Persona,
-    Entrance,
-    Exit,
-    Action,
-    Direction,
-    Dialogue,
-    Speech,
-    Intermission,
-    NodeTree,
-]
 
 
 @typic.klass(unsafe_hash=True)
 class Metadata(NodeMixin):
-    type: NodeType = dataclasses.field(init=False, default=NodeType.META)
+    """General information about a given play."""
+
+    type: ClassVar[NodeType] = NodeType.META
     rights: str = "Creative Commons Non-Commercial Share Alike 3.0"
     language: str = "en-GB-emodeng"
     publisher: str = "Published w/ ❤️ using iambic - https://pypi.org/project/iambic"
-    title: str = None
-    subtitle: str = None
+    title: Optional[str] = None
+    subtitle: Optional[str] = None
     edition: int = 1
     author: str = "William Shakespeare"
-    editors: Tuple[str, ...] = dataclasses.field(default_factory=tuple)
-    tags: Tuple[str, ...] = dataclasses.field(default_factory=tuple)
+    editors: Tuple[str, ...] = ()
+    tags: Tuple[str, ...] = ()
 
     @functools.lru_cache(1)
     def asmeta(self):  # pragma: nocover
@@ -387,19 +419,24 @@ class Metadata(NodeMixin):
         return dikt
 
 
-@typic.klass(unsafe_hash=True, delay=True)
+@typic.klass(unsafe_hash=True)
 class Play(NodeMixin):
-    type: NodeType = dataclasses.field(init=False, default=NodeType.PLAY)
-    children: Tuple[NodeTree, ...] = dataclasses.field(default_factory=tuple)
-    personae: Tuple[Persona, ...] = dataclasses.field(default_factory=tuple)
-    meta: Metadata = dataclasses.field(default_factory=Metadata)
+    """A representation of a play in its entirety."""
+
+    type: ClassVar[NodeType] = NodeType.PLAY
+    body: "PlayBodyT" = ()
+    personae: Tuple[Persona, ...] = ()
+    meta: Metadata = typic.field(default_factory=Metadata)
+
+    def __post_init__(self):
+        self.body = sort_body(self.body)
 
     @typic.cached_property
-    def id(self) -> str:
-        return inflection.parameterize(f"{self.meta.title}-play")
+    def id(self) -> NodeID:
+        return NodeID(parameterize(f"{self.meta.title}-{self.type.lower()}"))
 
 
-@dataclasses.dataclass(unsafe_hash=True)
+@typic.klass(unsafe_hash=True)
 class GenericNode(NodeMixin):
     """The root-object of a script.
 
@@ -407,7 +444,7 @@ class GenericNode(NodeMixin):
     """
 
     __resolver_map__: ClassVar[
-        Mapping[NodeType, Type[ResolvedNode]]
+        Mapping[NodeType, Type["ResolvedNodeT"]]
     ] = typic.FrozenDict(
         {
             NodeType.ACT: Act,
@@ -424,27 +461,26 @@ class GenericNode(NodeMixin):
             NodeType.PROL: Prologue,
             NodeType.SCENE: Scene,
             NodeType.SPCH: Speech,
-            NodeType.TREE: NodeTree,
         }
     )
     # Minimum data for a Node
     type: NodeType
     text: str
     index: int
-    # Additional fields which may be present
-    lineno: int = None
-    linepart: int = None
+    # Additional typic.fields which may be present
+    lineno: Optional[int] = None
+    linepart: Optional[int] = None
     # Given by text parser
     # If reading from JSON, we don't have/need this,
     # it will be provided inherently by the data-structure
     # on resolution-time.
-    match: typic.FrozenDict = dataclasses.field(default_factory=typic.FrozenDict)
-    parent: str = None
-    act: str = None
-    scene: str = None
+    match: typic.FrozenDict = typic.field(default_factory=typic.FrozenDict)
+    parent: Optional[NodeID] = None
+    act: Optional[NodeID] = None
+    scene: Optional[NodeID] = None
 
     @typic.cached_property
-    def resolved(self) -> ResolvedNode:
+    def resolved(self) -> "ResolvedNodeT":
         """Resolve a GenericNode into a typed, "resolved" Node.
 
         Raises
@@ -452,13 +488,12 @@ class GenericNode(NodeMixin):
         TypeError
             If the NodeType provided has no resolved Node mapping.
         """
-        try:
+        if self.type in self.__resolver_map__:
             return self.__resolver_map__[self.type].from_node(self)
-        except KeyError:  # pragma: nocover
-            raise TypeError(
-                f"Unrecognized node-type <{self.type}> for text <{self.text}>. "
-                f"Valid types are: {tuple(self.__resolver_map__)}"
-            )
+        raise ValueError(
+            f"Unrecognized node-type <{self.type}> for text <{self.text}>. "
+            f"Valid types are: {tuple(self.__resolver_map__)}"
+        )
 
     @typic.cached_property
     def pieces(self) -> List[str]:
@@ -469,33 +504,56 @@ class GenericNode(NodeMixin):
         return self.match[self.type] if self.match else self.text
 
 
+ResolvedNodeT = Union[
+    Act,
+    Scene,
+    Prologue,
+    Epilogue,
+    Persona,
+    Entrance,
+    Exit,
+    Action,
+    Direction,
+    Dialogue,
+    Speech,
+    Intermission,
+]
+SpeechNodeT = Union[Dialogue, Action, Direction]
+SpeechBodyT = Tuple[SpeechNodeT, ...]
+ActNodeT = Union[Scene, Intermission, Epilogue, Prologue]
+ActBodyT = Tuple[ActNodeT, ...]
+SceneNodeT = Union[Direction, Entrance, Exit, Speech]
+SceneBodyT = Tuple[SceneNodeT, ...]
+LogueBodyT = Union[ActBodyT, SceneBodyT]
+PlayNodeT = Union[Act, Epilogue, Prologue]
+PlayBodyT = Tuple[PlayNodeT, ...]
+PersonaeIDT = Tuple[NodeID, ...]
+
 _RESOLVABLE = set(GenericNode.__resolver_map__.values())
-_candidates = _RESOLVABLE.union(ChildNode.__args__)
-_candidates.add(NodeTree)
 
 
-def node_coercer(value: Any) -> Optional[ResolvedNode]:
+def node_deserializer(value: Any) -> Optional[ResolvedNodeT]:
     if type(value) in _RESOLVABLE or value is None:
         return value
     if isinstance(value, GenericNode):
         return value.resolved
 
     if not isinstance(value, Mapping):
-        value = typic.coerce(value, dict)
+        value = typic.transmute(dict, value)
 
-    handler: Type[ResolvedNode] = GenericNode.__resolver_map__[value.pop("type")]
-    return handler(**value)
+    handler: Type[ResolvedNodeT] = GenericNode.__resolver_map__[value.pop("type")]
+    resolved: ResolvedNodeT = typic.transmute(handler, value)
+    return resolved
+
+
+def log_deserializer(value):
+    return typic.protocol(Tuple[ResolvedNodeT, ...]).transmute(value)
 
 
 @functools.lru_cache(maxsize=None)
-def isnodetype(obj: Type) -> bool:
-    is_valid = (
-        obj is ResolvedNode
-        or obj is GenericNode
-        or obj in _candidates
-        or (
-            getattr(obj, "__origin__", None) is Union
-            and set(getattr(obj, "__args__", set())).issubset(_candidates)
-        )
+def isnodetype(obj: Type, *, __candidates=frozenset(_RESOLVABLE)) -> bool:
+    is_valid = obj is GenericNode or (
+        getattr(obj, "__origin__", None) is Union
+        and {*getattr(obj, "__args__", ())}.issubset(__candidates)
     )
     return is_valid

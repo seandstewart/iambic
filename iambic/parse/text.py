@@ -15,7 +15,7 @@ from iambic.ast import (
     NodeType,
     Play,
     InputType,
-    ResolvedNode,
+    ResolvedNodeT,
     Index,
     NodeToken,
     NODE_PATTERN,
@@ -27,10 +27,11 @@ logger = logging.getLogger(__name__)
 
 def _safe_resolve(
     node: typing.Optional[GenericNode], *, attr: str = None
-) -> ResolvedNode:
+) -> typing.Optional[ResolvedNodeT]:
     if node:
         resolved = node.resolved
         return getattr(resolved, attr, None) if attr else resolved
+    return None
 
 
 _safe_id = functools.partial(_safe_resolve, attr="id")
@@ -40,7 +41,7 @@ _safe_id = functools.partial(_safe_resolve, attr="id")
 class _PreNode:
     type: NodeType
     match: typing.Dict[str, str] = dataclasses.field(default_factory=dict)
-    text: str = None
+    text: str = ""
     index: int = 0
     lineno: int = 0
     linepart: int = 0
@@ -59,11 +60,11 @@ class _PreNode:
 
 @dataclasses.dataclass
 class ParserContext:
-    parent: GenericNode = None
-    act: GenericNode = None
-    scene: GenericNode = None
-    character: GenericNode = None
-    last: GenericNode = None
+    parent: typing.Optional[GenericNode] = None
+    act: typing.Optional[GenericNode] = None
+    scene: typing.Optional[GenericNode] = None
+    character: typing.Optional[GenericNode] = None
+    last: typing.Optional[GenericNode] = None
     index: Index = dataclasses.field(default_factory=Index)
     lineno: int = 0
     linepart: int = 0
@@ -92,7 +93,7 @@ class Parser:
 
     @classmethod
     @functools.lru_cache(maxsize=None, typed=True)
-    def match(cls, line: str, index: int) -> typing.Optional[_PreNode]:
+    def match(cls, line: str, index: int) -> _PreNode:
         """Take an individual line from a body of text and determine which
 
         :py:class:`NodeType` it is."""
@@ -140,21 +141,19 @@ class Parser:
         elif node.type == NodeType.INTER:
             kwargs["parent"] = _safe_id(ctx.act)
 
-        node = node.to_generic(**kwargs)
-        ctx.add(node)
+        generic = node.to_generic(**kwargs)
+        ctx.add(generic)
         return ctx
 
     @staticmethod
     def persona_handler(ctx: ParserContext, node: _PreNode) -> ParserContext:
         """The handler for :py:class:`NodeType.PERS`"""
-        node = node.to_generic()
-        resolved = node.resolved
+        generic: GenericNode = node.to_generic()
+        resolved = generic.resolved
         if resolved.id in ctx.index:
-            node: GenericNode = dataclasses.replace(
-                node, index=ctx.index[resolved.id].index
-            )
-        ctx.character = node
-        ctx.add(node)
+            generic = dataclasses.replace(generic, index=ctx.index[resolved.id].index)
+        ctx.character = generic
+        ctx.add(generic)
         return ctx
 
     @staticmethod
@@ -165,9 +164,9 @@ class Parser:
         kwargs = {}
         if node.type != NodeType.ACT:
             kwargs["parent"] = _safe_id(act)
-        node = node.to_generic(**kwargs)
-        parent = node
-        return parent, node
+        generic = node.to_generic(**kwargs)
+        parent = generic
+        return parent, generic
 
     @staticmethod
     def check_linecount(ctx: ParserContext, node: _PreNode):
@@ -195,7 +194,7 @@ class Parser:
 
         stage-direction/action/enter/exit context."""
         add = True
-        if ctx.index:
+        if ctx.index and ctx.last:
             if (
                 ctx.last.type
                 in {NodeType.DIR, NodeType.ACTION, NodeType.EXIT, NodeType.ENTER}
@@ -213,17 +212,17 @@ class Parser:
 
     def locale_handler(self, ctx: ParserContext, node: _PreNode) -> ParserContext:
         """The handler for locale-types, defined in :py:attr:`Parser.LOCALES`"""
-        ctx.parent, node = self.check_parent(ctx.act, node)
-        if node.type == NodeType.ACT:
-            ctx.act = node
-        elif node.type in {NodeType.EPIL, NodeType.PROL} and (
+        ctx.parent, generic = self.check_parent(ctx.act, node)
+        if generic.type == NodeType.ACT:
+            ctx.act = generic
+        elif generic.type in {NodeType.EPIL, NodeType.PROL} and (
             (ctx.last.type if ctx.last else None) != NodeType.ACT
         ):
-            ctx.scene = node
-            ctx.act = node
+            ctx.scene = generic
+            ctx.act = generic
         else:
-            ctx.scene = node
-        ctx.add(node)
+            ctx.scene = generic
+        ctx.add(generic)
         return ctx
 
     @staticmethod
@@ -236,7 +235,7 @@ class Parser:
 
     @staticmethod
     def _check_title(text: str) -> typing.Tuple[str, str]:
-        title = NODE_PATTERN.match(text.splitlines()[0]).group("title")
+        title = NODE_PATTERN.match(text.splitlines()[0]).group("title")  # type: ignore
         text = text.replace(f"# {title}", "") if title else text
         return title, text
 
@@ -257,7 +256,7 @@ class Parser:
 
             if not token:
                 raise ValueError(
-                    f"Detected start of a Metadata block, but no end."
+                    "Detected start of a Metadata block, but no end."
                 ) from None
             ix = text.index(token)
             fields = yaml.safe_load(text[:ix])
@@ -278,11 +277,10 @@ class Parser:
         *,
         input_type: InputType = None,
         tree: bool = True,
-    ) -> Play:
+    ) -> typing.Union[Play, Index]:
         ctx = ParserContext()
         input_type = input_type or self.guess_formatting(text)
         text = (html2text(text) if input_type is InputType.HTML else text).lstrip()
-        meta: typing.Optional[Metadata] = None
         meta, text = self.extract_metadata(text)
         for ix, line in enumerate(x for x in text.splitlines() if x.strip()):
             node = self.match(line, ix)
@@ -291,7 +289,7 @@ class Parser:
                 self.check_linecount(ctx, node)
                 handler = self.__parser_map[node.type]
                 ctx = handler(ctx=ctx, node=node)
-        return ctx.index.to_tree(meta=meta) if tree else ctx.index
+        return ctx.index.resolve(meta=meta) if tree else ctx.index
 
     __call__ = parse
 

@@ -2,17 +2,20 @@
 from iambic.ast import *
 
 PARSED = Play(
-    children=(
-        NodeTree(
-            node=Prologue(index=0, text="Prologue", setting=None, act=None),
-            children=(
+    body=(
+        Prologue(
+            index=0,
+            text="Prologue",
+            setting=None,
+            act=None,
+            body=(
                 Entrance(
                     index=1, text="Enter FOO", scene="prologue", personae=("foo",)
                 ),
                 Speech(
                     persona="foo",
                     scene="prologue",
-                    speech=(
+                    body=(
                         Dialogue(
                             line="Bar.",
                             persona="foo",
@@ -27,7 +30,7 @@ PARSED = Play(
                 Speech(
                     persona="a-bar",
                     scene="prologue",
-                    speech=(
+                    body=(
                         Dialogue(
                             line="Bar!",
                             persona="a-bar",
@@ -42,7 +45,7 @@ PARSED = Play(
                 Speech(
                     persona="bar-s-foo",
                     scene="prologue",
-                    speech=(
+                    body=(
                         Dialogue(
                             line="Foo!",
                             persona="bar-s-foo",
@@ -58,12 +61,17 @@ PARSED = Play(
             ),
             personae=("bar-s-foo", "a-bar", "foo"),
         ),
-        NodeTree(
-            node=Act(index=9, text="ACT I", num=1),
-            children=(
-                NodeTree(
-                    node=Prologue(index=10, text="Prologue", setting=None, act="act-i"),
-                    children=(
+        Act(
+            index=9,
+            text="ACT I",
+            num=1,
+            body=(
+                Prologue(
+                    index=10,
+                    text="Prologue",
+                    setting=None,
+                    act="act-i",
+                    body=(
                         Entrance(
                             index=11,
                             text="Enter BAR",
@@ -73,7 +81,7 @@ PARSED = Play(
                         Speech(
                             persona="bar",
                             scene="act-i-prologue",
-                            speech=(
+                            body=(
                                 Action(
                                     action="Aside",
                                     persona="bar",
@@ -95,11 +103,13 @@ PARSED = Play(
                     personae=("bar",),
                 ),
                 Intermission(index=15, text="INTERMISSION", act="act-i"),
-                NodeTree(
-                    node=Scene(
-                        index=16, text="SCENE I", num=1, act="act-i", setting=None
-                    ),
-                    children=(
+                Scene(
+                    index=16,
+                    text="SCENE I",
+                    num=1,
+                    act="act-i",
+                    setting=None,
+                    body=(
                         Entrance(
                             index=17,
                             text="Enter FOO and BAR",
@@ -109,7 +119,7 @@ PARSED = Play(
                         Speech(
                             persona="foo",
                             scene="act-i-scene-i",
-                            speech=(
+                            body=(
                                 Action(
                                     action="To BAR",
                                     persona="foo",
@@ -130,7 +140,7 @@ PARSED = Play(
                         Speech(
                             persona="bar",
                             scene="act-i-scene-i",
-                            speech=(
+                            body=(
                                 Dialogue(
                                     line="Foo.",
                                     persona="bar",
@@ -145,7 +155,7 @@ PARSED = Play(
                         Speech(
                             persona="foo",
                             scene="act-i-scene-i",
-                            speech=(
+                            body=(
                                 Dialogue(
                                     line="Bar. ...",
                                     persona="foo",
@@ -160,7 +170,7 @@ PARSED = Play(
                         Speech(
                             persona="bar",
                             scene="act-i-scene-i",
-                            speech=(
+                            body=(
                                 Dialogue(
                                     line="... Foo. ...",
                                     persona="bar",
@@ -175,7 +185,7 @@ PARSED = Play(
                         Speech(
                             persona="foo",
                             scene="act-i-scene-i",
-                            speech=(
+                            body=(
                                 Dialogue(
                                     line="... Bar.",
                                     persona="foo",
@@ -196,9 +206,12 @@ PARSED = Play(
                     ),
                     personae=("foo", "bar"),
                 ),
-                NodeTree(
-                    node=Epilogue(index=33, text="EPILOGUE", setting=None, act="act-i"),
-                    children=(
+                Epilogue(
+                    index=33,
+                    text="EPILOGUE",
+                    setting=None,
+                    act="act-i",
+                    body=(
                         Entrance(
                             index=34,
                             text="Enter FOO and BAR",
@@ -208,7 +221,7 @@ PARSED = Play(
                         Speech(
                             persona="foo",
                             scene="act-i-epilogue",
-                            speech=(
+                            body=(
                                 Action(
                                     action="Reads",
                                     persona="foo",
@@ -230,7 +243,6 @@ PARSED = Play(
                     personae=("foo",),
                 ),
             ),
-            personae=(),
         ),
     ),
     personae=(

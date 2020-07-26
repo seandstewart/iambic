@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+import typic
+
 from iambic import ast
 
 
@@ -14,4 +16,4 @@ def render_json(tree: ast.Play) -> str:
     tree
         The play tree, as loaded via :func:`iambic.parse.text` or :func:`iambic.parse.data`
     """
-    return tree.tojson(indent=2)
+    return typic.tojson(tree, indent=2, escape_forward_slashes=False)

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-import dataclasses
 from typing import Tuple
 
 import pytest
@@ -8,6 +7,12 @@ import typic
 
 from iambic import ast, parse
 from iambic.parse.text import ParserContext, _PreNode
+
+generic_act = ast.GenericNode("act", "Act I", 0, 0)
+generic_scene = ast.GenericNode(
+    "scene", "Scene II", 0, 0, parent=generic_act.resolved.id
+)
+generic_persona = ast.GenericNode("persona", "Bar", 0, 0)
 
 
 @pytest.mark.parametrize(
@@ -44,27 +49,57 @@ def test_text_match(value: str, expected: ast.NodeType):
 
 
 @pytest.mark.parametrize(
-    argnames=("ctx", "node", "expected_parent_text"),
+    argnames=("ctx", "node", "expected_parent_text", "expected_node"),
     argvalues=[
-        (ParserContext(), _PreNode(type=ast.NodeType.ACT, text="Act I"), "Act I"),
-        (ParserContext(), _PreNode(type=ast.NodeType.SCENE, text="Scene I"), "Scene I"),
+        (
+            ParserContext(),
+            _PreNode(type=ast.NodeType.ACT, text="Act I"),
+            "Act I",
+            ast.GenericNode(
+                type=ast.NodeType.ACT, text="Act I", index=0, lineno=0, linepart=0
+            ),
+        ),
+        (
+            ParserContext(act=generic_act),
+            _PreNode(type=ast.NodeType.SCENE, text="Scene I"),
+            "Scene I",
+            ast.GenericNode(
+                type=ast.NodeType.SCENE,
+                text="Scene I",
+                index=0,
+                lineno=0,
+                linepart=0,
+                parent=generic_act.resolved.id,
+            ),
+        ),
         (
             ParserContext(),
             _PreNode(type=ast.NodeType.EPIL, text="Epilogue"),
             "Epilogue",
+            ast.GenericNode(
+                type=ast.NodeType.EPIL, text="Epilogue", index=0, lineno=0, linepart=0
+            ),
         ),
         (
             ParserContext(),
             _PreNode(type=ast.NodeType.PROL, text="Prologue"),
             "Prologue",
+            ast.GenericNode(
+                type=ast.NodeType.PROL, text="Prologue", index=0, lineno=0, linepart=0
+            ),
         ),
     ],
 )
-def test_locale_handler(ctx: ParserContext, node: _PreNode, expected_parent_text: str):
+def test_locale_handler(
+    ctx: ParserContext,
+    node: _PreNode,
+    expected_parent_text: str,
+    expected_node: ast.GenericNode,
+):
     ctx = parse.text.locale_handler(ctx, node)
     assert ctx.parent.text == expected_parent_text
     ctx_node = getattr(ctx, node.type, ctx.act)
-    assert ctx_node == ast.GenericNode(**dataclasses.asdict(node))
+    assert ctx_node == expected_node
 
 
 @pytest.mark.parametrize(
@@ -76,31 +111,28 @@ def test_persona_handler(ctx: ParserContext, node: _PreNode):
     assert ctx.character == node.to_generic()
 
 
-generic_act = ast.GenericNode("act", "Act I", 0, 0)
-generic_scene = ast.GenericNode("scene", "Scene II", 0, 0)
-
-
 @pytest.mark.parametrize(
     argnames=("ctx", "node", "expected"),
     argvalues=[
         (
-            ParserContext(generic_act, generic_act, generic_scene),
+            ParserContext(generic_persona, generic_act, generic_scene, generic_persona),
             _PreNode(ast.NodeType.DIAL, text=""),
             ast.GenericNode(
-                "dialogue",
+                ast.NodeType.DIAL,
                 text="",
                 index=0,
                 lineno=0,
                 linepart=0,
                 scene=generic_scene.resolved.id,
+                parent="bar",
             ),
         ),
         (
             ParserContext(generic_act, generic_act, generic_scene),
             _PreNode(ast.NodeType.INTER),
             ast.GenericNode(
-                "intermission",
-                text=None,
+                ast.NodeType.INTER,
+                text="",
                 index=0,
                 lineno=0,
                 linepart=0,
@@ -144,6 +176,7 @@ def test_check_direction():
         text="_Foo",
         index=0,
         match=typic.FrozenDict({"start": "_", "direction": "Foo"}),
+        parent="Bar",
     )
     ctx.add(gen)
     node = _PreNode(type=ast.NodeType.DIAL, text="foo")

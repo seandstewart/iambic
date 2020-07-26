@@ -1,12 +1,103 @@
 {
+  "type": "object",
+  "title": "Play",
+  "description": "A representation of a play in its entirety.",
+  "properties": {
+    "body": {
+      "type": "array",
+      "default": [
+      ],
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/Act"
+          },
+          {
+            "$ref": "#/definitions/Epilogue"
+          },
+          {
+            "$ref": "#/definitions/Prologue"
+          }
+        ]
+      }
+    },
+    "personae": {
+      "type": "array",
+      "default": [
+      ],
+      "items": {
+        "$ref": "#/definitions/Persona"
+      }
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "play"
+      ],
+      "default": "play",
+      "readOnly": true
+    },
+    "meta": {
+      "$ref": "#/definitions/Metadata"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "meta"
+  ],
   "definitions": {
-    "Act": {
+    "Direction": {
       "type": "object",
-      "title": "Act",
-      "description": "Act(index: int, text: str, num: int)",
+      "title": "Direction",
+      "description": "A representation of a stage direction.",
       "properties": {
-        "num": {
+        "index": {
           "type": "integer"
+        },
+        "stop": {
+          "type": "boolean",
+          "default": true
+        },
+        "scene": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "direction"
+          ],
+          "default": "direction",
+          "readOnly": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "scene",
+        "action"
+      ]
+    },
+    "Entrance": {
+      "type": "object",
+      "title": "Entrance",
+      "description": "A representation of an entrance for character(s) in a Scene.",
+      "properties": {
+        "index": {
+          "type": "integer"
+        },
+        "personae": {
+          "type": "array",
+          "default": [
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "scene": {
+          "type": "string"
         },
         "text": {
           "type": "string"
@@ -14,28 +105,230 @@
         "type": {
           "type": "string",
           "enum": [
-            "act"
+            "entrance"
           ],
-          "default": "act"
-        },
-        "index": {
-          "type": "integer"
+          "default": "entrance",
+          "readOnly": true
         }
       },
       "additionalProperties": false,
       "required": [
-        "num",
-        "text",
-        "index"
+        "index",
+        "scene",
+        "text"
+      ]
+    },
+    "Exit": {
+      "type": "object",
+      "title": "Exit",
+      "description": "A representation of an exit for character(s) in a Scene.",
+      "properties": {
+        "index": {
+          "type": "integer"
+        },
+        "personae": {
+          "type": "array",
+          "default": [
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "scene": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "exit"
+          ],
+          "default": "exit",
+          "readOnly": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "scene",
+        "text"
+      ]
+    },
+    "Dialogue": {
+      "type": "object",
+      "title": "Dialogue",
+      "description": "A representation of a line of dialogue for a character in a scene.",
+      "properties": {
+        "index": {
+          "type": "integer"
+        },
+        "line": {
+          "type": "string"
+        },
+        "linepart": {
+          "type": "integer",
+          "default": 0
+        },
+        "lineno": {
+          "type": "integer"
+        },
+        "scene": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "dialogue"
+          ],
+          "default": "dialogue",
+          "readOnly": true
+        },
+        "persona": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "line",
+        "lineno",
+        "scene",
+        "persona"
+      ]
+    },
+    "Action": {
+      "type": "object",
+      "title": "Action",
+      "description": "A representation of a stage direction related to a specific character.",
+      "properties": {
+        "index": {
+          "type": "integer"
+        },
+        "scene": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "action"
+          ],
+          "default": "action",
+          "readOnly": true
+        },
+        "persona": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "scene",
+        "action",
+        "persona"
+      ]
+    },
+    "Speech": {
+      "type": "object",
+      "title": "Speech",
+      "description": "A representation of an unbroken piece of dialogue related to a single character.",
+      "properties": {
+        "index": {
+          "type": "integer"
+        },
+        "body": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/Dialogue"
+              },
+              {
+                "$ref": "#/definitions/Action"
+              },
+              {
+                "$ref": "#/definitions/Direction"
+              }
+            ]
+          }
+        },
+        "scene": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "speech"
+          ],
+          "default": "speech",
+          "readOnly": true
+        },
+        "persona": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "body",
+        "scene",
+        "persona"
       ]
     },
     "Scene": {
       "type": "object",
       "title": "Scene",
-      "description": "Scene(index: int, text: str, num: int, act: str, setting: Union[str, NoneType])",
+      "description": "A representation of a single Scene in a play.",
       "properties": {
+        "index": {
+          "type": "integer"
+        },
+        "personae": {
+          "type": "array",
+          "default": [
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "body": {
+          "type": "array",
+          "default": [
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/Direction"
+              },
+              {
+                "$ref": "#/definitions/Entrance"
+              },
+              {
+                "$ref": "#/definitions/Exit"
+              },
+              {
+                "$ref": "#/definitions/Speech"
+              }
+            ]
+          }
+        },
+        "num": {
+          "type": "integer"
+        },
         "act": {
-          "type": "string"
+          "title": "Act",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "text": {
           "type": "string"
@@ -51,36 +344,124 @@
             }
           ]
         },
-        "num": {
-          "type": "integer"
-        },
         "type": {
           "type": "string",
           "enum": [
             "scene"
           ],
-          "default": "scene"
-        },
-        "index": {
-          "type": "integer"
+          "default": "scene",
+          "readOnly": true
         }
       },
       "additionalProperties": false,
       "required": [
-        "act",
-        "text",
-        "setting",
+        "index",
         "num",
-        "index"
+        "text"
+      ]
+    },
+    "Intermission": {
+      "type": "object",
+      "title": "Intermission",
+      "description": "A representation of an Intermission in a play.",
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "index": {
+          "type": "integer"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "intermission"
+          ],
+          "default": "intermission",
+          "readOnly": true
+        },
+        "act": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "index",
+        "act"
       ]
     },
     "Prologue": {
       "type": "object",
       "title": "Prologue",
-      "description": "Prologue(index: int, text: str, setting: Union[str, NoneType], act: str = None)",
+      "description": "A representation of a single Prologue in a play.\n\n    Notes:\n        Prologues (and Epilogues) may have the body structure of either an Act or Scene.\n    ",
       "properties": {
+        "index": {
+          "type": "integer"
+        },
+        "personae": {
+          "type": "array",
+          "default": [
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "as_act": {
+          "type": "boolean"
+        },
+        "body": {
+          "title": "Body",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/Scene"
+                  },
+                  {
+                    "$ref": "#/definitions/Intermission"
+                  },
+                  {
+                    "$ref": "#/definitions/Epilogue"
+                  },
+                  {
+                    "$ref": "#/definitions/Prologue"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/Direction"
+                  },
+                  {
+                    "$ref": "#/definitions/Entrance"
+                  },
+                  {
+                    "$ref": "#/definitions/Exit"
+                  },
+                  {
+                    "$ref": "#/definitions/Speech"
+                  }
+                ]
+              }
+            }
+          ]
+        },
         "act": {
-          "type": "string"
+          "title": "Act",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "text": {
           "type": "string"
@@ -101,26 +482,89 @@
           "enum": [
             "prologue"
           ],
-          "default": "prologue"
-        },
-        "index": {
-          "type": "integer"
+          "default": "prologue",
+          "readOnly": true
         }
       },
       "additionalProperties": false,
       "required": [
-        "text",
-        "setting",
-        "index"
+        "index",
+        "as_act",
+        "text"
       ]
     },
     "Epilogue": {
       "type": "object",
       "title": "Epilogue",
-      "description": "Epilogue(index: int, text: str, setting: Union[str, NoneType], act: str = None)",
+      "description": "A representation of a single Epilogue in a play.\n\n    Notes:\n        Epilogues (and Prologues) may have the body structure of either an Act or Scene.\n    ",
       "properties": {
+        "index": {
+          "type": "integer"
+        },
+        "personae": {
+          "type": "array",
+          "default": [
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "as_act": {
+          "type": "boolean"
+        },
+        "body": {
+          "title": "Body",
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/Scene"
+                  },
+                  {
+                    "$ref": "#/definitions/Intermission"
+                  },
+                  {
+                    "$ref": "#/definitions/Epilogue"
+                  },
+                  {
+                    "$ref": "#/definitions/Prologue"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/Direction"
+                  },
+                  {
+                    "$ref": "#/definitions/Entrance"
+                  },
+                  {
+                    "$ref": "#/definitions/Exit"
+                  },
+                  {
+                    "$ref": "#/definitions/Speech"
+                  }
+                ]
+              }
+            }
+          ]
+        },
         "act": {
-          "type": "string"
+          "title": "Act",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "text": {
           "type": "string"
@@ -141,26 +585,48 @@
           "enum": [
             "epilogue"
           ],
-          "default": "epilogue"
-        },
-        "index": {
-          "type": "integer"
+          "default": "epilogue",
+          "readOnly": true
         }
       },
       "additionalProperties": false,
       "required": [
-        "text",
-        "setting",
-        "index"
+        "index",
+        "as_act",
+        "text"
       ]
     },
-    "Intermission": {
+    "Act": {
       "type": "object",
-      "title": "Intermission",
-      "description": "Intermission(index: int, text: str, act: str)",
+      "title": "Act",
+      "description": "A representation of a single Act in a Play.",
       "properties": {
-        "act": {
-          "type": "string"
+        "index": {
+          "type": "integer"
+        },
+        "body": {
+          "type": "array",
+          "default": [
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/Scene"
+              },
+              {
+                "$ref": "#/definitions/Intermission"
+              },
+              {
+                "$ref": "#/definitions/Epilogue"
+              },
+              {
+                "$ref": "#/definitions/Prologue"
+              }
+            ]
+          }
+        },
+        "num": {
+          "type": "integer"
         },
         "text": {
           "type": "string"
@@ -168,1189 +634,134 @@
         "type": {
           "type": "string",
           "enum": [
-            "intermission"
+            "act"
           ],
-          "default": "intermission"
-        },
-        "index": {
-          "type": "integer"
+          "default": "act",
+          "readOnly": true
         }
       },
       "additionalProperties": false,
       "required": [
-        "act",
-        "text",
-        "index"
+        "index",
+        "num",
+        "text"
       ]
     },
     "Persona": {
       "type": "object",
       "title": "Persona",
-      "description": "Persona(index: int, text: str, name: str, short: str = None)",
+      "description": "A representation of a single character in a Play.",
       "properties": {
-        "name": {
-          "type": "string"
-        },
-        "short": {
-          "type": "string"
-        },
-        "text": {
-          "type": "string"
+        "index": {
+          "type": "integer"
         },
         "type": {
           "type": "string",
           "enum": [
             "persona"
           ],
-          "default": "persona"
-        },
-        "index": {
-          "type": "integer"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "name",
-        "text",
-        "index"
-      ]
-    },
-    "Entrance": {
-      "type": "object",
-      "title": "Entrance",
-      "description": "Entrance(index: int, text: str, scene: str, personae: Tuple[str, ...] = <factory>)",
-      "properties": {
-        "scene": {
-          "type": "string"
-        },
-        "personae": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "default": "persona",
+          "readOnly": true
         },
         "text": {
           "type": "string"
         },
-        "type": {
-          "type": "string",
-          "enum": [
-            "entrance"
-          ],
-          "default": "entrance"
+        "name": {
+          "type": "string"
         },
-        "index": {
-          "type": "integer"
+        "short": {
+          "title": "Short",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false,
       "required": [
-        "scene",
-        "personae",
+        "index",
         "text",
-        "index"
-      ]
-    },
-    "Exit": {
-      "type": "object",
-      "title": "Exit",
-      "description": "Exit(index: int, text: str, scene: str, personae: Tuple[str, ...] = <factory>)",
-      "properties": {
-        "scene": {
-          "type": "string"
-        },
-        "personae": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "text": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "exit"
-          ],
-          "default": "exit"
-        },
-        "index": {
-          "type": "integer"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "scene",
-        "personae",
-        "text",
-        "index"
-      ]
-    },
-    "Action": {
-      "type": "object",
-      "title": "Action",
-      "description": "Action(action: str, persona: str, scene: str, index: int)",
-      "properties": {
-        "scene": {
-          "type": "string"
-        },
-        "persona": {
-          "type": "string"
-        },
-        "action": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "action"
-          ],
-          "default": "action"
-        },
-        "index": {
-          "type": "integer"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "scene",
-        "persona",
-        "action",
-        "index"
-      ]
-    },
-    "Direction": {
-      "type": "object",
-      "title": "Direction",
-      "description": "Direction(action: str, scene: str, index: int, stop: bool = True)",
-      "properties": {
-        "scene": {
-          "type": "string"
-        },
-        "stop": {
-          "type": "boolean",
-          "default": true
-        },
-        "action": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "direction"
-          ],
-          "default": "direction"
-        },
-        "index": {
-          "type": "integer"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "scene",
-        "action",
-        "index"
-      ]
-    },
-    "Dialogue": {
-      "type": "object",
-      "title": "Dialogue",
-      "description": "Dialogue(line: str, persona: str, scene: str, index: int, lineno: int, linepart: int = 0)",
-      "properties": {
-        "line": {
-          "type": "string"
-        },
-        "scene": {
-          "type": "string"
-        },
-        "linepart": {
-          "type": "integer",
-          "default": 0
-        },
-        "persona": {
-          "type": "string"
-        },
-        "lineno": {
-          "type": "integer"
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "dialogue"
-          ],
-          "default": "dialogue"
-        },
-        "index": {
-          "type": "integer"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "line",
-        "scene",
-        "persona",
-        "lineno",
-        "index"
+        "name"
       ]
     },
     "Metadata": {
       "type": "object",
       "title": "Metadata",
-      "description": "Metadata(rights: str = 'Creative Commons Non-Commercial Share Alike 3.0', language: str = 'en-GB-emodeng', publisher: str = 'Published w/ ❤️ using iambic - https://pypi.org/project/iambic', title: str = None, subtitle: str = None, edition: int = 1, author: str = 'William Shakespeare', editors: Tuple[str, ...] = <factory>, tags: Tuple[str, ...] = <factory>)",
+      "description": "General information about a given play.",
       "properties": {
-        "publisher": {
-          "type": "string",
-          "default": "Published w/ ❤️ using iambic - https://pypi.org/project/iambic"
-        },
-        "edition": {
-          "type": "integer",
-          "default": 1
-        },
-        "rights": {
-          "type": "string",
-          "default": "Creative Commons Non-Commercial Share Alike 3.0"
-        },
         "subtitle": {
-          "type": "string"
-        },
-        "author": {
-          "type": "string",
-          "default": "William Shakespeare"
-        },
-        "language": {
-          "type": "string",
-          "default": "en-GB-emodeng"
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "title": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "meta"
-          ],
-          "default": "meta"
-        },
-        "editors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "tags",
-        "editors"
-      ]
-    },
-    "Speech": {
-      "type": "object",
-      "title": "Speech",
-      "description": "Speech(persona: str, scene: str, speech: Tuple[Union[iambic.ast.node.Dialogue, iambic.ast.node.Action, iambic.ast.node.Direction], ...], index: int)",
-      "properties": {
-        "scene": {
-          "type": "string"
-        },
-        "persona": {
-          "type": "string"
-        },
-        "speech": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "Dialogue",
-                "description": "Dialogue(line: str, persona: str, scene: str, index: int, lineno: int, linepart: int = 0)",
-                "properties": {
-                  "line": {
-                    "type": "string"
-                  },
-                  "scene": {
-                    "type": "string"
-                  },
-                  "linepart": {
-                    "type": "integer",
-                    "default": 0
-                  },
-                  "persona": {
-                    "type": "string"
-                  },
-                  "lineno": {
-                    "type": "integer"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "dialogue"
-                    ],
-                    "default": "dialogue"
-                  },
-                  "index": {
-                    "type": "integer"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "line",
-                  "scene",
-                  "persona",
-                  "lineno",
-                  "index"
-                ],
-                "definitions": {
-
-                }
-              },
-              {
-                "type": "object",
-                "title": "Action",
-                "description": "Action(action: str, persona: str, scene: str, index: int)",
-                "properties": {
-                  "scene": {
-                    "type": "string"
-                  },
-                  "persona": {
-                    "type": "string"
-                  },
-                  "action": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "action"
-                    ],
-                    "default": "action"
-                  },
-                  "index": {
-                    "type": "integer"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "scene",
-                  "persona",
-                  "action",
-                  "index"
-                ],
-                "definitions": {
-
-                }
-              },
-              {
-                "type": "object",
-                "title": "Direction",
-                "description": "Direction(action: str, scene: str, index: int, stop: bool = True)",
-                "properties": {
-                  "scene": {
-                    "type": "string"
-                  },
-                  "stop": {
-                    "type": "boolean",
-                    "default": true
-                  },
-                  "action": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "direction"
-                    ],
-                    "default": "direction"
-                  },
-                  "index": {
-                    "type": "integer"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "scene",
-                  "action",
-                  "index"
-                ],
-                "definitions": {
-
-                }
-              }
-            ]
-          }
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "speech"
-          ],
-          "default": "speech"
-        },
-        "index": {
-          "type": "integer"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "scene",
-        "persona",
-        "speech",
-        "index"
-      ]
-    },
-    "NodeTree": {
-      "type": "object",
-      "title": "NodeTree",
-      "description": "NodeTree(node: Union[iambic.ast.node.Act, iambic.ast.node.Scene, iambic.ast.node.Prologue, iambic.ast.node.Epilogue, iambic.ast.node.Persona, iambic.ast.node.Entrance, iambic.ast.node.Exit, iambic.ast.node.Action, iambic.ast.node.Direction, iambic.ast.node.Dialogue, iambic.ast.node.Speech, iambic.ast.node.Intermission], children: Tuple[Union[iambic.ast.node.Act, iambic.ast.node.Scene, iambic.ast.node.Prologue, iambic.ast.node.Epilogue, iambic.ast.node.Persona, iambic.ast.node.Entrance, iambic.ast.node.Exit, iambic.ast.node.Action, iambic.ast.node.Direction, iambic.ast.node.Dialogue, iambic.ast.node.Speech, iambic.ast.node.Intermission], ...] = <factory>, personae: Tuple[str, ...] = <factory>)",
-      "properties": {
-        "children": {
-          "type": "array",
-          "items": {
-            "anyOf": [
-              {
-                "type": "object",
-                "title": "Act",
-                "description": "Act(index: int, text: str, num: int)",
-                "properties": {
-                  "num": {
-                    "type": "integer"
-                  },
-                  "text": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "act"
-                    ],
-                    "default": "act"
-                  },
-                  "index": {
-                    "type": "integer"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "num",
-                  "text",
-                  "index"
-                ],
-                "definitions": {
-
-                }
-              },
-              {
-                "type": "object",
-                "title": "Scene",
-                "description": "Scene(index: int, text: str, num: int, act: str, setting: Union[str, NoneType])",
-                "properties": {
-                  "act": {
-                    "type": "string"
-                  },
-                  "text": {
-                    "type": "string"
-                  },
-                  "setting": {
-                    "title": "Setting",
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "num": {
-                    "type": "integer"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "scene"
-                    ],
-                    "default": "scene"
-                  },
-                  "index": {
-                    "type": "integer"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "act",
-                  "text",
-                  "setting",
-                  "num",
-                  "index"
-                ],
-                "definitions": {
-
-                }
-              },
-              {
-                "type": "object",
-                "title": "Prologue",
-                "description": "Prologue(index: int, text: str, setting: Union[str, NoneType], act: str = None)",
-                "properties": {
-                  "act": {
-                    "type": "string"
-                  },
-                  "text": {
-                    "type": "string"
-                  },
-                  "setting": {
-                    "title": "Setting",
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "prologue"
-                    ],
-                    "default": "prologue"
-                  },
-                  "index": {
-                    "type": "integer"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "text",
-                  "setting",
-                  "index"
-                ],
-                "definitions": {
-
-                }
-              },
-              {
-                "type": "object",
-                "title": "Epilogue",
-                "description": "Epilogue(index: int, text: str, setting: Union[str, NoneType], act: str = None)",
-                "properties": {
-                  "act": {
-                    "type": "string"
-                  },
-                  "text": {
-                    "type": "string"
-                  },
-                  "setting": {
-                    "title": "Setting",
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "epilogue"
-                    ],
-                    "default": "epilogue"
-                  },
-                  "index": {
-                    "type": "integer"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "text",
-                  "setting",
-                  "index"
-                ],
-                "definitions": {
-
-                }
-              },
-              {
-                "type": "object",
-                "title": "Persona",
-                "description": "Persona(index: int, text: str, name: str, short: str = None)",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "short": {
-                    "type": "string"
-                  },
-                  "text": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "persona"
-                    ],
-                    "default": "persona"
-                  },
-                  "index": {
-                    "type": "integer"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "name",
-                  "text",
-                  "index"
-                ],
-                "definitions": {
-
-                }
-              },
-              {
-                "type": "object",
-                "title": "Entrance",
-                "description": "Entrance(index: int, text: str, scene: str, personae: Tuple[str, ...] = <factory>)",
-                "properties": {
-                  "scene": {
-                    "type": "string"
-                  },
-                  "personae": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "text": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "entrance"
-                    ],
-                    "default": "entrance"
-                  },
-                  "index": {
-                    "type": "integer"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "scene",
-                  "personae",
-                  "text",
-                  "index"
-                ],
-                "definitions": {
-
-                }
-              },
-              {
-                "type": "object",
-                "title": "Exit",
-                "description": "Exit(index: int, text: str, scene: str, personae: Tuple[str, ...] = <factory>)",
-                "properties": {
-                  "scene": {
-                    "type": "string"
-                  },
-                  "personae": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "text": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "exit"
-                    ],
-                    "default": "exit"
-                  },
-                  "index": {
-                    "type": "integer"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "scene",
-                  "personae",
-                  "text",
-                  "index"
-                ],
-                "definitions": {
-
-                }
-              },
-              {
-                "type": "object",
-                "title": "Action",
-                "description": "Action(action: str, persona: str, scene: str, index: int)",
-                "properties": {
-                  "scene": {
-                    "type": "string"
-                  },
-                  "persona": {
-                    "type": "string"
-                  },
-                  "action": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "action"
-                    ],
-                    "default": "action"
-                  },
-                  "index": {
-                    "type": "integer"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "scene",
-                  "persona",
-                  "action",
-                  "index"
-                ],
-                "definitions": {
-
-                }
-              },
-              {
-                "type": "object",
-                "title": "Direction",
-                "description": "Direction(action: str, scene: str, index: int, stop: bool = True)",
-                "properties": {
-                  "scene": {
-                    "type": "string"
-                  },
-                  "stop": {
-                    "type": "boolean",
-                    "default": true
-                  },
-                  "action": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "direction"
-                    ],
-                    "default": "direction"
-                  },
-                  "index": {
-                    "type": "integer"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "scene",
-                  "action",
-                  "index"
-                ],
-                "definitions": {
-
-                }
-              },
-              {
-                "type": "object",
-                "title": "Dialogue",
-                "description": "Dialogue(line: str, persona: str, scene: str, index: int, lineno: int, linepart: int = 0)",
-                "properties": {
-                  "line": {
-                    "type": "string"
-                  },
-                  "scene": {
-                    "type": "string"
-                  },
-                  "linepart": {
-                    "type": "integer",
-                    "default": 0
-                  },
-                  "persona": {
-                    "type": "string"
-                  },
-                  "lineno": {
-                    "type": "integer"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "dialogue"
-                    ],
-                    "default": "dialogue"
-                  },
-                  "index": {
-                    "type": "integer"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "line",
-                  "scene",
-                  "persona",
-                  "lineno",
-                  "index"
-                ],
-                "definitions": {
-
-                }
-              },
-              {
-                "type": "object",
-                "title": "Speech",
-                "description": "Speech(persona: str, scene: str, speech: Tuple[Union[iambic.ast.node.Dialogue, iambic.ast.node.Action, iambic.ast.node.Direction], ...], index: int)",
-                "properties": {
-                  "scene": {
-                    "type": "string"
-                  },
-                  "persona": {
-                    "type": "string"
-                  },
-                  "speech": {
-                    "type": "array",
-                    "items": {
-                      "anyOf": [
-                        {
-                          "type": "object",
-                          "title": "Dialogue",
-                          "description": "Dialogue(line: str, persona: str, scene: str, index: int, lineno: int, linepart: int = 0)",
-                          "properties": {
-                            "line": {
-                              "type": "string"
-                            },
-                            "scene": {
-                              "type": "string"
-                            },
-                            "linepart": {
-                              "type": "integer",
-                              "default": 0
-                            },
-                            "persona": {
-                              "type": "string"
-                            },
-                            "lineno": {
-                              "type": "integer"
-                            },
-                            "type": {
-                              "type": "string",
-                              "enum": [
-                                "dialogue"
-                              ],
-                              "default": "dialogue"
-                            },
-                            "index": {
-                              "type": "integer"
-                            }
-                          },
-                          "additionalProperties": false,
-                          "required": [
-                            "line",
-                            "scene",
-                            "persona",
-                            "lineno",
-                            "index"
-                          ],
-                          "definitions": {
-
-                          }
-                        },
-                        {
-                          "type": "object",
-                          "title": "Action",
-                          "description": "Action(action: str, persona: str, scene: str, index: int)",
-                          "properties": {
-                            "scene": {
-                              "type": "string"
-                            },
-                            "persona": {
-                              "type": "string"
-                            },
-                            "action": {
-                              "type": "string"
-                            },
-                            "type": {
-                              "type": "string",
-                              "enum": [
-                                "action"
-                              ],
-                              "default": "action"
-                            },
-                            "index": {
-                              "type": "integer"
-                            }
-                          },
-                          "additionalProperties": false,
-                          "required": [
-                            "scene",
-                            "persona",
-                            "action",
-                            "index"
-                          ],
-                          "definitions": {
-
-                          }
-                        },
-                        {
-                          "type": "object",
-                          "title": "Direction",
-                          "description": "Direction(action: str, scene: str, index: int, stop: bool = True)",
-                          "properties": {
-                            "scene": {
-                              "type": "string"
-                            },
-                            "stop": {
-                              "type": "boolean",
-                              "default": true
-                            },
-                            "action": {
-                              "type": "string"
-                            },
-                            "type": {
-                              "type": "string",
-                              "enum": [
-                                "direction"
-                              ],
-                              "default": "direction"
-                            },
-                            "index": {
-                              "type": "integer"
-                            }
-                          },
-                          "additionalProperties": false,
-                          "required": [
-                            "scene",
-                            "action",
-                            "index"
-                          ],
-                          "definitions": {
-
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "speech"
-                    ],
-                    "default": "speech"
-                  },
-                  "index": {
-                    "type": "integer"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "scene",
-                  "persona",
-                  "speech",
-                  "index"
-                ],
-                "definitions": {
-
-                }
-              },
-              {
-                "type": "object",
-                "title": "Intermission",
-                "description": "Intermission(index: int, text: str, act: str)",
-                "properties": {
-                  "act": {
-                    "type": "string"
-                  },
-                  "text": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "intermission"
-                    ],
-                    "default": "intermission"
-                  },
-                  "index": {
-                    "type": "integer"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "act",
-                  "text",
-                  "index"
-                ],
-                "definitions": {
-
-                }
-              }
-            ]
-          }
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "tree"
-          ],
-          "default": "tree"
-        },
-        "node": {
-          "title": "Node",
+          "title": "Subtitle",
           "anyOf": [
             {
-              "$ref": "#/definitions/Act"
+              "type": "string"
             },
             {
-              "$ref": "#/definitions/Scene"
-            },
-            {
-              "$ref": "#/definitions/Prologue"
-            },
-            {
-              "$ref": "#/definitions/Epilogue"
-            },
-            {
-              "$ref": "#/definitions/Persona"
-            },
-            {
-              "$ref": "#/definitions/Entrance"
-            },
-            {
-              "$ref": "#/definitions/Exit"
-            },
-            {
-              "$ref": "#/definitions/Action"
-            },
-            {
-              "$ref": "#/definitions/Direction"
-            },
-            {
-              "$ref": "#/definitions/Dialogue"
-            },
-            {
-              "$ref": "#/definitions/Speech"
-            },
-            {
-              "$ref": "#/definitions/Intermission"
+              "type": "null"
             }
           ]
         },
-        "personae": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "children",
-        "node",
-        "personae"
-      ]
-    },
-    "Meta": {
-      "type": "object",
-      "title": "Meta",
-      "description": "Metadata(rights: str = 'Creative Commons Non-Commercial Share Alike 3.0', language: str = 'en-GB-emodeng', publisher: str = 'Published w/ ❤️ using iambic - https://pypi.org/project/iambic', title: str = None, subtitle: str = None, edition: int = 1, author: str = 'William Shakespeare', editors: Tuple[str, ...] = <factory>, tags: Tuple[str, ...] = <factory>)",
-      "properties": {
-        "publisher": {
+        "author": {
           "type": "string",
-          "default": "Published w/ ❤️ using iambic - https://pypi.org/project/iambic"
+          "default": "William Shakespeare"
         },
         "edition": {
           "type": "integer",
           "default": 1
         },
+        "publisher": {
+          "type": "string",
+          "default": "Published w/ ❤️ using iambic - https://pypi.org/project/iambic"
+        },
         "rights": {
           "type": "string",
           "default": "Creative Commons Non-Commercial Share Alike 3.0"
         },
-        "subtitle": {
-          "type": "string"
-        },
-        "author": {
-          "type": "string",
-          "default": "William Shakespeare"
-        },
-        "language": {
-          "type": "string",
-          "default": "en-GB-emodeng"
-        },
         "tags": {
           "type": "array",
+          "default": [
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "editors": {
+          "type": "array",
+          "default": [
+          ],
           "items": {
             "type": "string"
           }
         },
         "title": {
-          "type": "string"
+          "title": "Title",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "type": {
           "type": "string",
           "enum": [
             "meta"
           ],
-          "default": "meta"
+          "default": "meta",
+          "readOnly": true
         },
-        "editors": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "tags",
-        "editors"
-      ]
-    },
-    "Play": {
-      "type": "object",
-      "title": "Play",
-      "description": "Play(children: Tuple[iambic.ast.node.NodeTree, ...] = <factory>, personae: Tuple[iambic.ast.node.Persona, ...] = <factory>, meta: iambic.ast.node.Metadata = <factory>)",
-      "properties": {
-        "children": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/NodeTree"
-          }
-        },
-        "meta": {
-          "$ref": "#/definitions/Meta"
-        },
-        "type": {
+        "language": {
           "type": "string",
-          "enum": [
-            "play"
-          ],
-          "default": "play"
-        },
-        "personae": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Persona"
-          }
+          "default": "en-GB-emodeng"
         }
       },
       "additionalProperties": false,
       "required": [
-        "children",
-        "meta",
-        "personae"
       ]
     }
   }
