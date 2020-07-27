@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "iambic"
 packages = [{include = "iambic"}, {include = "docs"}]
-version = "2.0.0"
+version = "2.0.1"
 description = "Data extraction and rendering library for Shakespearean text."
 authors = ["Sean Stewart <sean_stewart@me.com>"]
 license = "MIT"
@@ -35,7 +35,7 @@ python = "^3.7"
 typical = "^2.0.27"
 yattag = "^1.13"
 html2text = "^2020.1.16"
-tablib = "^1.1.0"
+tablib = "^2.0"
 ujson = "^2.0"
 
 [tool.poetry.dev-dependencies]
