@@ -8,11 +8,11 @@ import typic
 from iambic import ast, parse
 from iambic.parse.text import ParserContext, _PreNode
 
-generic_act = ast.GenericNode("act", "Act I", 0, 0)
+generic_act = ast.GenericNode(ast.NodeType.ACT, "Act I", 0, 0)
 generic_scene = ast.GenericNode(
-    "scene", "Scene II", 0, 0, parent=generic_act.resolved.id
+    ast.NodeType.SCENE, "Scene II", 0, 0, parent=generic_act.resolved.id
 )
-generic_persona = ast.GenericNode("persona", "Bar", 0, 0)
+generic_persona = ast.GenericNode(ast.NodeType.PERS, "Bar", 0, 0)
 
 
 @pytest.mark.parametrize(
@@ -97,7 +97,7 @@ def test_locale_handler(
     expected_node: ast.GenericNode,
 ):
     ctx = parse.text.locale_handler(ctx, node)
-    assert ctx.parent.text == expected_parent_text
+    assert ctx.parent.text == expected_parent_text  # type: ignore
     ctx_node = getattr(ctx, node.type, ctx.act)
     assert ctx_node == expected_node
 
@@ -124,7 +124,7 @@ def test_persona_handler(ctx: ParserContext, node: _PreNode):
                 lineno=0,
                 linepart=0,
                 scene=generic_scene.resolved.id,
-                parent="bar",
+                parent=ast.NodeID("bar"),
             ),
         ),
         (

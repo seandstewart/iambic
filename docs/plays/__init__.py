@@ -54,6 +54,7 @@ class Corpus:
         seen = set()
         item = inflection.parameterize(item)
         for k, v in self._corpus.items():
+            seen.add(k)
             if item in k:
                 self.__hits += 1
                 return v.read_text()

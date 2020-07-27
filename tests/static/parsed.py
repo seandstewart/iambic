@@ -10,16 +10,19 @@ PARSED = Play(
             act=None,
             body=(
                 Entrance(
-                    index=1, text="Enter FOO", scene="prologue", personae=("foo",)
+                    index=1,
+                    text="Enter FOO",
+                    scene=NodeID("prologue"),
+                    personae=(NodeID("foo"),),
                 ),
                 Speech(
-                    persona="foo",
-                    scene="prologue",
+                    persona=NodeID("foo"),
+                    scene=NodeID("prologue"),
                     body=(
                         Dialogue(
                             line="Bar.",
-                            persona="foo",
-                            scene="prologue",
+                            persona=NodeID("foo"),
+                            scene=NodeID("prologue"),
                             index=3,
                             lineno=1,
                             linepart=0,
@@ -28,13 +31,13 @@ PARSED = Play(
                     index=3,
                 ),
                 Speech(
-                    persona="a-bar",
-                    scene="prologue",
+                    persona=NodeID("a-bar"),
+                    scene=NodeID("prologue"),
                     body=(
                         Dialogue(
                             line="Bar!",
-                            persona="a-bar",
-                            scene="prologue",
+                            persona=NodeID("a-bar"),
+                            scene=NodeID("prologue"),
                             index=5,
                             lineno=2,
                             linepart=0,
@@ -43,13 +46,13 @@ PARSED = Play(
                     index=5,
                 ),
                 Speech(
-                    persona="bar-s-foo",
-                    scene="prologue",
+                    persona=NodeID("bar-s-foo"),
+                    scene=NodeID("prologue"),
                     body=(
                         Dialogue(
                             line="Foo!",
-                            persona="bar-s-foo",
-                            scene="prologue",
+                            persona=NodeID("bar-s-foo"),
+                            scene=NodeID("prologue"),
                             index=7,
                             lineno=3,
                             linepart=0,
@@ -57,9 +60,9 @@ PARSED = Play(
                     ),
                     index=7,
                 ),
-                Exit(index=8, text="Exeunt", scene="prologue", personae=()),
+                Exit(index=8, text="Exeunt", scene=NodeID("prologue"), personae=()),
             ),
-            personae=("bar-s-foo", "a-bar", "foo"),
+            personae=(NodeID("bar-s-foo"), NodeID("a-bar"), NodeID("foo")),
         ),
         Act(
             index=9,
@@ -70,28 +73,28 @@ PARSED = Play(
                     index=10,
                     text="Prologue",
                     setting=None,
-                    act="act-i",
+                    act=NodeID("act-i"),
                     body=(
                         Entrance(
                             index=11,
                             text="Enter BAR",
-                            scene="act-i-prologue",
-                            personae=("bar",),
+                            scene=NodeID("act-i-prologue"),
+                            personae=(NodeID("bar"),),
                         ),
                         Speech(
-                            persona="bar",
-                            scene="act-i-prologue",
+                            persona=NodeID("bar"),
+                            scene=NodeID("act-i-prologue"),
                             body=(
                                 Action(
                                     action="Aside",
-                                    persona="bar",
-                                    scene="act-i-prologue",
+                                    persona=NodeID("bar"),
+                                    scene=NodeID("act-i-prologue"),
                                     index=13,
                                 ),
                                 Dialogue(
                                     line="Foo.",
-                                    persona="bar",
-                                    scene="act-i-prologue",
+                                    persona=NodeID("bar"),
+                                    scene=NodeID("act-i-prologue"),
                                     index=14,
                                     lineno=4,
                                     linepart=0,
@@ -100,36 +103,36 @@ PARSED = Play(
                             index=13,
                         ),
                     ),
-                    personae=("bar",),
+                    personae=(NodeID("bar"),),
                 ),
-                Intermission(index=15, text="INTERMISSION", act="act-i"),
+                Intermission(index=15, text="INTERMISSION", act=NodeID("act-i")),
                 Scene(
                     index=16,
                     text="SCENE I",
                     num=1,
-                    act="act-i",
+                    act=NodeID("act-i"),
                     setting=None,
                     body=(
                         Entrance(
                             index=17,
                             text="Enter FOO and BAR",
-                            scene="act-i-scene-i",
-                            personae=("foo", "bar"),
+                            scene=NodeID("act-i-scene-i"),
+                            personae=(NodeID("foo"), NodeID("bar")),
                         ),
                         Speech(
-                            persona="foo",
-                            scene="act-i-scene-i",
+                            persona=NodeID("foo"),
+                            scene=NodeID("act-i-scene-i"),
                             body=(
                                 Action(
                                     action="To BAR",
-                                    persona="foo",
-                                    scene="act-i-scene-i",
+                                    persona=NodeID("foo"),
+                                    scene=NodeID("act-i-scene-i"),
                                     index=19,
                                 ),
                                 Dialogue(
                                     line="Bar.",
-                                    persona="foo",
-                                    scene="act-i-scene-i",
+                                    persona=NodeID("foo"),
+                                    scene=NodeID("act-i-scene-i"),
                                     index=20,
                                     lineno=5,
                                     linepart=0,
@@ -138,13 +141,13 @@ PARSED = Play(
                             index=19,
                         ),
                         Speech(
-                            persona="bar",
-                            scene="act-i-scene-i",
+                            persona=NodeID("bar"),
+                            scene=NodeID("act-i-scene-i"),
                             body=(
                                 Dialogue(
                                     line="Foo.",
-                                    persona="bar",
-                                    scene="act-i-scene-i",
+                                    persona=NodeID("bar"),
+                                    scene=NodeID("act-i-scene-i"),
                                     index=22,
                                     lineno=6,
                                     linepart=0,
@@ -153,13 +156,13 @@ PARSED = Play(
                             index=22,
                         ),
                         Speech(
-                            persona="foo",
-                            scene="act-i-scene-i",
+                            persona=NodeID("foo"),
+                            scene=NodeID("act-i-scene-i"),
                             body=(
                                 Dialogue(
                                     line="Bar. ...",
-                                    persona="foo",
-                                    scene="act-i-scene-i",
+                                    persona=NodeID("foo"),
+                                    scene=NodeID("act-i-scene-i"),
                                     index=24,
                                     lineno=7,
                                     linepart=1,
@@ -168,13 +171,13 @@ PARSED = Play(
                             index=24,
                         ),
                         Speech(
-                            persona="bar",
-                            scene="act-i-scene-i",
+                            persona=NodeID("bar"),
+                            scene=NodeID("act-i-scene-i"),
                             body=(
                                 Dialogue(
                                     line="... Foo. ...",
-                                    persona="bar",
-                                    scene="act-i-scene-i",
+                                    persona=NodeID("bar"),
+                                    scene=NodeID("act-i-scene-i"),
                                     index=26,
                                     lineno=7,
                                     linepart=2,
@@ -183,20 +186,20 @@ PARSED = Play(
                             index=26,
                         ),
                         Speech(
-                            persona="foo",
-                            scene="act-i-scene-i",
+                            persona=NodeID("foo"),
+                            scene=NodeID("act-i-scene-i"),
                             body=(
                                 Dialogue(
                                     line="... Bar.",
-                                    persona="foo",
-                                    scene="act-i-scene-i",
+                                    persona=NodeID("foo"),
+                                    scene=NodeID("act-i-scene-i"),
                                     index=28,
                                     lineno=7,
                                     linepart=3,
                                 ),
                                 Direction(
                                     action="A long stage direction that goes on forever and says far to much to be reasonable. So much so that it takes up more than two lines, which is just ridiculous. I mean seriously, why? Why write so much for one stage direction? For what purpose?",
-                                    scene="act-i-scene-i",
+                                    scene=NodeID("act-i-scene-i"),
                                     index=29,
                                     stop=True,
                                 ),
@@ -204,34 +207,34 @@ PARSED = Play(
                             index=28,
                         ),
                     ),
-                    personae=("foo", "bar"),
+                    personae=(NodeID("foo"), NodeID("bar")),
                 ),
                 Epilogue(
                     index=33,
                     text="EPILOGUE",
                     setting=None,
-                    act="act-i",
+                    act=NodeID("act-i"),
                     body=(
                         Entrance(
                             index=34,
                             text="Enter FOO and BAR",
-                            scene="act-i-epilogue",
-                            personae=("foo", "bar"),
+                            scene=NodeID("act-i-epilogue"),
+                            personae=(NodeID("foo"), NodeID("bar")),
                         ),
                         Speech(
-                            persona="foo",
-                            scene="act-i-epilogue",
+                            persona=NodeID("foo"),
+                            scene=NodeID("act-i-epilogue"),
                             body=(
                                 Action(
                                     action="Reads",
-                                    persona="foo",
-                                    scene="act-i-epilogue",
+                                    persona=NodeID("foo"),
+                                    scene=NodeID("act-i-epilogue"),
                                     index=36,
                                 ),
                                 Dialogue(
                                     line="Foo.",
-                                    persona="foo",
-                                    scene="act-i-epilogue",
+                                    persona=NodeID("foo"),
+                                    scene=NodeID("act-i-epilogue"),
                                     index=37,
                                     lineno=8,
                                     linepart=0,
@@ -240,7 +243,7 @@ PARSED = Play(
                             index=36,
                         ),
                     ),
-                    personae=("foo",),
+                    personae=(NodeID("foo"),),
                 ),
             ),
         ),

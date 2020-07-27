@@ -24,4 +24,4 @@ def render_markdown(tree: ast.Play, with_toc: bool = False) -> str:
     --------
     :class:`iambic.render.html.HTMLRenderer`
     """
-    return html2text(render_html(tree, with_toc=with_toc))
+    return html2text(render_html(tree, as_text=True, with_toc=with_toc))  # type: ignore

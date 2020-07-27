@@ -17,5 +17,7 @@ class InputType(str, enum.Enum):
 
 
 typic.register(deserializer=node_deserializer, check=isnodetype)
-typic.register(deserializer=log_deserializer, check=lambda o: o == LogueBodyT)
+typic.register(
+    deserializer=log_deserializer, check=lambda o: o == LogueBodyT  # type: ignore
+)
 typic.resolve()

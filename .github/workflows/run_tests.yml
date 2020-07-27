@@ -48,7 +48,7 @@ jobs:
       run: "poetry run black . --check"
 
     - name: Static type-check with MyPy
-      run: "poetry run mypy iambic --ignore-missing-imports"
+      run: "poetry run mypy iambic"
 
     - name: Test with pytest
       run: "poetry run pytest tests --cov --cov-report xml"

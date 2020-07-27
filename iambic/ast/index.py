@@ -49,7 +49,7 @@ class Index(Dict[str, Union[ast.ResolvedNodeT, ast.GenericNode]]):
             return self.__type_map[item]
         return super().__getitem__(item)
 
-    def __contains__(self, item: IndexKeyT) -> bool:
+    def __contains__(self, item: IndexKeyT) -> bool:  # type: ignore
         if isinstance(item, ast.NodeType):
             return item in self.__type_map
         return super().__contains__(item)

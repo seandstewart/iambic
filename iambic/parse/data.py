@@ -12,7 +12,7 @@ class Parser:
 
     @functools.lru_cache()
     def parse(self, data: str) -> ast.ResolvedNodeT:
-        return typic.transmute(ast.ResolvedNodeT, data)
+        return typic.transmute(ast.ResolvedNodeT, data)  # type: ignore
 
     __call__ = parse
 

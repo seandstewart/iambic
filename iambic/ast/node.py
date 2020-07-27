@@ -77,7 +77,7 @@ class Act(NodeMixin):
     index: int
     text: str
     num: int
-    body: "ActBodyT" = typic.field(compare=False, hash=False, default=())
+    body: "ActBodyT" = typic.field(compare=False, hash=False, default=())  # type: ignore
 
     @typic.cached_property
     def id(self) -> NodeID:
@@ -104,8 +104,8 @@ class Scene(NodeMixin):
     num: int
     setting: Optional[str] = None
     act: Optional[NodeID] = None
-    body: "SceneBodyT" = typic.field(compare=False, hash=False, default=())
-    personae: "PersonaeIDT" = typic.field(compare=False, hash=False, default=())
+    body: "SceneBodyT" = typic.field(compare=False, hash=False, default=())  # type: ignore
+    personae: "PersonaeIDT" = typic.field(compare=False, hash=False, default=())  # type: ignore
 
     @typic.cached_property
     def id(self) -> NodeID:
@@ -151,9 +151,9 @@ class Prologue(NodeMixin):
     text: str
     setting: Optional[str] = None
     act: Optional[NodeID] = None
-    body: "LogueBodyT" = typic.field(compare=False, hash=False, default=())
-    personae: "PersonaeIDT" = typic.field(compare=False, hash=False, default=())
-    as_act: bool = typic.field(init=False)
+    body: "LogueBodyT" = typic.field(compare=False, hash=False, default=())  # type: ignore
+    personae: "PersonaeIDT" = typic.field(compare=False, hash=False, default=())  # type: ignore
+    as_act: bool = typic.field(init=False)  # type: ignore
 
     def __post_init__(self):
         # If the body conforms to the `ActBodyT` type, it should be treated as such.
@@ -426,7 +426,7 @@ class Play(NodeMixin):
     type: ClassVar[NodeType] = NodeType.PLAY
     body: "PlayBodyT" = ()
     personae: Tuple[Persona, ...] = ()
-    meta: Metadata = typic.field(default_factory=Metadata)
+    meta: Metadata = typic.field(default_factory=Metadata)  # type: ignore
 
     def __post_init__(self):
         self.body = sort_body(self.body)
@@ -474,7 +474,7 @@ class GenericNode(NodeMixin):
     # If reading from JSON, we don't have/need this,
     # it will be provided inherently by the data-structure
     # on resolution-time.
-    match: typic.FrozenDict = typic.field(default_factory=typic.FrozenDict)
+    match: typic.FrozenDict = typic.field(default_factory=typic.FrozenDict)  # type: ignore
     parent: Optional[NodeID] = None
     act: Optional[NodeID] = None
     scene: Optional[NodeID] = None
@@ -489,7 +489,8 @@ class GenericNode(NodeMixin):
             If the NodeType provided has no resolved Node mapping.
         """
         if self.type in self.__resolver_map__:
-            return self.__resolver_map__[self.type].from_node(self)
+            model: Type[ResolvedNodeT] = self.__resolver_map__[self.type]
+            return model.from_node(self)  # type: ignore
         raise ValueError(
             f"Unrecognized node-type <{self.type}> for text <{self.text}>. "
             f"Valid types are: {tuple(self.__resolver_map__)}"
@@ -542,12 +543,12 @@ def node_deserializer(value: Any) -> Optional[ResolvedNodeT]:
         value = typic.transmute(dict, value)
 
     handler: Type[ResolvedNodeT] = GenericNode.__resolver_map__[value.pop("type")]
-    resolved: ResolvedNodeT = typic.transmute(handler, value)
+    resolved: ResolvedNodeT = typic.transmute(handler, value)  # type: ignore
     return resolved
 
 
 def log_deserializer(value):
-    return typic.protocol(Tuple[ResolvedNodeT, ...]).transmute(value)
+    return typic.protocol(Tuple[ResolvedNodeT, ...]).transmute(value)  # type: ignore
 
 
 @functools.lru_cache(maxsize=None)
