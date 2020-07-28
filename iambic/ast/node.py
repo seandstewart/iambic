@@ -376,6 +376,7 @@ class Speech(NodeMixin):
         return NodeID(
             f"{self.scene}-{self.persona}-{self.type.lower()}-"
             f"{'{0}-{1}'.format(*self.linerange)}"
+            f"-{self.index}"
         )
 
 
