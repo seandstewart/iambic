@@ -270,14 +270,7 @@ class Parser:
         return meta, text
 
     @functools.lru_cache()
-    def parse(
-        self,
-        text: str,
-        title: str = None,
-        *,
-        input_type: InputType = None,
-        tree: bool = True,
-    ) -> typing.Union[Play, Index]:
+    def parse(self, text: str, *, input_type: InputType = None,) -> Play:
         ctx = ParserContext()
         input_type = input_type or self.guess_formatting(text)
         text = (html2text(text) if input_type is InputType.HTML else text).lstrip()
@@ -289,7 +282,7 @@ class Parser:
                 self.check_linecount(ctx, node)
                 handler = self.__parser_map[node.type]
                 ctx = handler(ctx=ctx, node=node)
-        return ctx.index.resolve(meta=meta) if tree else ctx.index
+        return ctx.index.resolve(meta=meta)
 
     __call__ = parse
 
