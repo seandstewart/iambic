@@ -75,8 +75,9 @@ class Tabulator:
             if isinstance(child, ast.Speech):
                 persona = personae[child.persona]
                 index = char_index[persona.name]
-                node_column[index] = entry
                 cline_column[index] += child.num_lines
+                if marker_type.SPEAK not in node_column[index]:
+                    node_column[index] = entry
             elif isinstance(child, ast.Entrance):
                 for pers in child.personae:
                     persona = personae[pers]
