@@ -113,8 +113,8 @@ def iter_table(play: ast.Play) -> Iterable[str]:
 
 def iter_play(play: ast.Play, table: bool = True) -> Iterable[str]:
     personae = {p.id: p for p in play.personae}
-    if title := play.meta.title:
-        yield f"# {title}"
+    if play.meta.title:
+        yield f"# {play.meta.title}"
         yield ""
     if table:
         yield from iter_table(play)
