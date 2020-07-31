@@ -31,7 +31,7 @@ Foo.
 
 ## INTERMISSION
 
-### SCENE I.
+### SCENE I. A place of meeting.
 
 _Enter FOO and BAR_
 

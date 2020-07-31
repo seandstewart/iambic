@@ -72,7 +72,10 @@ def iter_scene(
     if isinstance(scene, ast.Intermission):
         yield f"{heading} {id}"
     else:
-        yield f"{heading} {id}"
+        setting = scene.setting or " "
+        if setting.strip():
+            setting = f". {setting} "
+        yield f"{heading}{setting}{id}"
         yield ""
         body = cast(ast.SceneBodyT, scene.body)
         for entry in body:

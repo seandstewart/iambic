@@ -7,4 +7,4 @@ from tests.static import HTML, MD_RAW
 def test_html():
     parsed = parse.text(MD_RAW)
     rendered = render.html(parsed)
-    assert rendered == HTML
+    assert rendered == HTML.rstrip()

@@ -125,7 +125,7 @@ class Scene(NodeMixin):
     def from_node(cls, node: "GenericNode") -> "Scene":
         numeral = node.pieces[1]
         num = int(numeral) if numeral.isdigit() else roman.integer(numeral)
-        setting = " ".join(node.pieces[2:]) if len(node.pieces) > 2 else None
+        setting = node.match.get("setting") or None
         parent = node.parent or node.act or node.scene
         if parent is None:
             raise ValueError(f"Can't build {cls.__name__!r} from node: {node}")
@@ -174,7 +174,7 @@ class Prologue(NodeMixin):
 
     @classmethod
     def from_node(cls, node: "GenericNode") -> "Prologue":
-        setting = " ".join(node.pieces[1:]) if len(node.pieces) > 1 else None
+        setting = node.match.get("setting") or None
         return cls(
             index=node.index, text=node.match_text, setting=setting, act=node.parent
         )

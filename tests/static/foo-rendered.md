@@ -51,7 +51,7 @@ Foo.
 
 ### INTERMISSION {: id=intermission }
 
-### SCENE I {: id=act-i-scene-i-i }
+### SCENE I. A place of meeting. {: id=act-i-scene-i-i }
 
 
 *Enter FOO and BAR* <a class="headerlink" href="#act-i-scene-i-i-entrance-17" title="Permanent link">👁️‍🗨️</a>

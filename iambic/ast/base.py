@@ -44,12 +44,19 @@ NODE_PATTERN = re.compile(
     r"""
     (
         # Locales: Act, Scene, Prologue, Epilogue, Intermission
-        ^\#+\s(?P<act>(ACT)\s([IVX]+|\d+))              |
-        ^\#+\s(?P<scene>SCENE\s([IVX]+|\d+)).*          |
-        ^\#+\s(?P<prologue>PROLOGUE).*                  |
-        ^\#+\s(?P<epilogue>EPILOGUE).*                  |
-        ^\#+\s(?P<intermission>(INTERMISSION)).*        |
-        ^\#\s(?P<title>(.*)).*                          |
+        (
+            ^\#+\s
+            (
+                (?P<act>(ACT)\s([IVX]+|\d+))                |
+                (?P<scene>SCENE\s([IVX]+|\d+))              |
+                (?P<prologue>PROLOGUE)                      |
+                (?P<epilogue>EPILOGUE)                      |
+                (?P<intermission>INTERMISSION)              |
+                (?P<title>(.*))
+            )
+            (?:\.)?\s?(?P<setting>.*)
+            $
+        )                                               |
         # Persona
         [*_]{2}(?P<persona>(
             ([A-Z][a-zA-Z'’]*\W{0,2}([a-z]+)?\s?
