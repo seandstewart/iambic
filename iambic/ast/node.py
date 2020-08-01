@@ -115,8 +115,12 @@ class Scene(NodeMixin):
     def col(self) -> str:
         pre = self.act or ""
         if pre:
-            return titleize(f"{pre}: {self.text}")
-        return titleize(self.text)
+            pieces = self.act.split("-")
+            if len(pieces) == 2:
+                pre = f"{pieces[1].upper()}: "
+            else:
+                pre = f"{pieces[0].title()}: "
+        return f"{pre}{roman.numeral(self.num).lower()}"
 
     @classmethod
     def from_node(cls, node: "GenericNode") -> "Scene":
@@ -168,8 +172,12 @@ class Prologue(NodeMixin):
     def col(self):
         pre = self.act or ""
         if pre:
-            return titleize(f"{pre}: {self.text}")
-        return titleize(self.text)
+            pieces = self.act.split("-")
+            if len(pieces) == 2:
+                pre = f"{pieces[1].upper()}: "
+            else:
+                pre = f"{pieces[0].title()}: "
+        return f"{pre}{self.type.title()}"
 
     @classmethod
     def from_node(cls, node: "GenericNode") -> "Prologue":

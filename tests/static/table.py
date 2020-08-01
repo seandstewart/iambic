@@ -2,11 +2,11 @@
 # -*- coding: UTF-8 -*-
 
 TABLE = {
-    "Act I: Epilogue": ["X", "", "", "O"],
-    "Act I: Prologue": ["", "", "", "X"],
-    "Act I: Scene I": ["X", "", "", "X"],
     "Dramatis Personae": ["Foo", "A Bar", "Bar's Foo", "Bar"],
     "First Appearance": [2, 4, 6, 12],
+    "I: Epilogue": ["X", "", "", "O"],
+    "I: Prologue": ["", "", "", "X"],
+    "I: i": ["X", "", "", "X"],
     "Intermission": ["", "", "", ""],
     "Lines": [5, 1, 1, 3],
     "Prologue": ["X", "X", "X", ""],
@@ -14,17 +14,17 @@ TABLE = {
 
 MATRIX = [
     (
-        "Act I: Epilogue",
-        "Act I: Prologue",
-        "Act I: Scene I",
         "Dramatis Personae",
         "First Appearance",
+        "I: Epilogue",
+        "I: Prologue",
+        "I: i",
         "Intermission",
         "Lines",
         "Prologue",
     ),
-    ("X", "", "X", "Foo", 2, "", 5, "X"),
-    ("", "", "", "A Bar", 4, "", 1, "X"),
-    ("", "", "", "Bar's Foo", 6, "", 1, "X"),
-    ("O", "X", "X", "Bar", 12, "", 3, ""),
+    ("Foo", 2, "X", "", "X", "", 5, "X"),
+    ("A Bar", 4, "", "", "", "", 1, "X"),
+    ("Bar's Foo", 6, "", "", "", "", 1, "X"),
+    ("Bar", 12, "O", "X", "X", "", 3, ""),
 ]

@@ -188,7 +188,7 @@ def iter_scene_tab(table: tablib.Dataset, scene_name: str) -> Iterable[str]:
     yield f'=== "{scene_name}"'
     for character, marker in zip(characters, scene):
         if marker:
-            yield f"   - {character} ⇒ {marker}"
+            yield f"    - {character} ⇒ {marker}"
     yield ""
 
 
@@ -206,7 +206,7 @@ def iter_tabs(table: tablib.Dataset, *, __headers=frozenset(Column)):
 
 
 def export_tabs(table: tablib.Dataset) -> str:
-    return "\n".join(table)
+    return "\n".join(iter_tabs(table))
 
 
 def export_grid(table: tablib.Dataset) -> str:
