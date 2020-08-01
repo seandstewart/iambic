@@ -198,7 +198,7 @@ def iter_grid_tab(table: tablib.Dataset) -> Iterable[str]:
     yield ""
 
 
-def iter_tabs(table: tablib.Dataset, *, __headers=frozenset((c.value for c in Column))):
+def iter_tabs(table: tablib.Dataset, *, __headers=frozenset(Column)):
     yield from iter_character_tab(table)
     for header in (h for h in table.headers if h not in __headers):
         yield from iter_scene_tab(table, header)
