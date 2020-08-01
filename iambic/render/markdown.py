@@ -4,7 +4,7 @@ from textwrap import indent
 from typing import Iterable, Mapping, Union, cast
 
 from iambic import ast
-from .table import RichMarker, tabulate
+from .table import RichMarker, tabulate, iter_tabs
 
 TITLE = "# {0}"
 ACT = "## {0}"
@@ -106,11 +106,12 @@ def iter_act(
 
 def iter_table(play: ast.Play) -> Iterable[str]:
     tbl = tabulate(play, links=True, rich=True)
-    yield ACT.format("Character Breakdown")
+    yield ACT.format("Character Index")
     yield ""
-    yield '???+ "Dramatis Personae"'
+    yield '???+ "Character Index"'
     yield ""
-    yield indent(tbl.export("cli", tablefmt="github"), "    ")
+    for line in iter_tabs(tbl):
+        yield indent(line, "    ")
     yield ""
 
 

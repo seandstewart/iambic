@@ -8,7 +8,7 @@ from iambic import ast
 from .markdown import render_markdown
 
 
-EXTENSIONS = ("meta", "attr_list", "pymdownx.details", "tables")
+EXTENSIONS = ("meta", "attr_list", "pymdownx.details", "tables", "pymdownx.tabbed")
 
 
 @functools.lru_cache(maxsize=1)

@@ -1,5 +1,5 @@
-Dramatis Personae,First Appearance,Lines,P,I.P,INT,I.i,I.E
-Foo,2,5,X,,,X,X
-A Bar,4,1,X,,,,
-Bar's Foo,6,1,X,,,,
-Bar,12,3,,X,,X,O
+Act I: Epilogue,Act I: Prologue,Act I: Scene I,Dramatis Personae,First Appearance,Intermission,Lines,Prologue
+X,,X,Foo,2,,5,X
+,,,A Bar,4,,1,X
+,,,Bar's Foo,6,,1,X
+O,X,X,Bar,12,,3,

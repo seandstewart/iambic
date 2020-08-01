@@ -113,13 +113,10 @@ class Scene(NodeMixin):
 
     @typic.cached_property
     def col(self) -> str:
-        pre = ""
-        if self.act:
-            if NodeType.PROL in self.act or NodeType.EPIL in self.act:
-                pre = self.act[0].upper()
-            else:
-                pre = self.act.split("-")[-1].upper()
-        return f"{pre}.{roman.numeral(self.num).lower()}"
+        pre = self.act or ""
+        if pre:
+            return titleize(f"{pre}: {self.text}")
+        return titleize(self.text)
 
     @classmethod
     def from_node(cls, node: "GenericNode") -> "Scene":
@@ -169,8 +166,10 @@ class Prologue(NodeMixin):
 
     @typic.cached_property
     def col(self):
-        pre = f"{self.act.split('-')[-1].upper()}." if self.act else ""
-        return f"{pre}{self.type.value[0].upper()}"
+        pre = self.act or ""
+        if pre:
+            return titleize(f"{pre}: {self.text}")
+        return titleize(self.text)
 
     @classmethod
     def from_node(cls, node: "GenericNode") -> "Prologue":
@@ -212,7 +211,7 @@ class Intermission(NodeMixin):
 
     @typic.cached_property
     def col(self):
-        return "INT"
+        return titleize(self.text)
 
 
 @typic.klass(unsafe_hash=True)

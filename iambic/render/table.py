@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 import enum
-from typing import List, Dict, Hashable, Tuple, Union, Type, Any
+import textwrap
+from typing import List, Dict, Hashable, Tuple, Union, Type, Any, Iterable
 
 import tablib
 
@@ -121,6 +122,7 @@ class Tabulator:
                 isinstance(act, ast.Act) or act.as_act
             ) else (act,)
             for scene in children:
+
                 table[scene.col] = [marker_type.NONE.value for _ in char_column]
                 if isinstance(scene, ast.Intermission):
                     continue
@@ -166,3 +168,52 @@ class Tabulator:
 
 
 tabulate = Tabulator()
+
+
+class TableFormat(str, enum.Enum):
+    TABLE = "table"
+    TABS = "tabs"
+
+
+def iter_character_tab(table: tablib.Dataset) -> Iterable[str]:
+    characters, lines = table[Column.CHAR], table[Column.CLINE]
+    yield f'=== "{Column.CHAR.value}"'
+    for character, line_count in zip(characters, lines):
+        yield f"    - {character} ({line_count} lines)"
+    yield ""
+
+
+def iter_scene_tab(table: tablib.Dataset, scene_name: str) -> Iterable[str]:
+    characters, scene = table[Column.CHAR], table[scene_name]
+    yield f'=== "{scene_name}"'
+    for character, marker in zip(characters, scene):
+        if marker:
+            yield f"   - {character} ⇒ {marker}"
+    yield ""
+
+
+def iter_grid_tab(table: tablib.Dataset) -> Iterable[str]:
+    yield '=== "Full Breakdown"'
+    yield textwrap.indent(export_grid(table), "    ")
+    yield ""
+
+
+def iter_tabs(table: tablib.Dataset, *, __headers=frozenset((c.value for c in Column))):
+    yield from iter_character_tab(table)
+    for header in (h for h in table.headers if h not in __headers):
+        yield from iter_scene_tab(table, header)
+    yield from iter_grid_tab(table)
+
+
+def export_tabs(table: tablib.Dataset) -> str:
+    return "\n".join(table)
+
+
+def export_grid(table: tablib.Dataset) -> str:
+    return table.export("cli", tablefmt="github")
+
+
+def export(table: tablib.Dataset, format: TableFormat = TableFormat.TABLE):
+    if format == TableFormat.TABLE:
+        return export_grid(table)
+    return export_tabs(table)

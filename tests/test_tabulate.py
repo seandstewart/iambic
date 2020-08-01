@@ -17,6 +17,7 @@ def test_matrix():
 
 
 def test_dataset():
+    print(iambic.render.table.dataset(TABLE).csv)
     assert (
         iambic.render.table.dataset(TABLE).csv.rstrip("\n").replace("\r", "") == DATASET
     )
