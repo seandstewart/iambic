@@ -115,7 +115,7 @@ class Scene(NodeMixin):
     def col(self) -> str:
         pre = self.act or ""
         if pre:
-            pieces = self.act.split("-")
+            pieces = pre.split("-")
             if len(pieces) == 2:
                 pre = f"{pieces[1].upper()}: "
             else:
