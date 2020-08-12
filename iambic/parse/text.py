@@ -187,6 +187,9 @@ class Parser:
             if not continued:
                 ctx.linepart = 0
 
+    _DIRS = {NodeType.DIR, NodeType.ACTION, NodeType.EXIT, NodeType.ENTER}
+    _DIRS_C = {NodeType.DIAL, *_DIRS}
+
     @classmethod
     def check_direction(cls, ctx: ParserContext, node: _PreNode) -> bool:
         """Check that a given node is not actually within a
@@ -195,9 +198,8 @@ class Parser:
         add = True
         if ctx.index and ctx.last:
             if (
-                ctx.last.type
-                in {NodeType.DIR, NodeType.ACTION, NodeType.EXIT, NodeType.ENTER}
-                and node.type in {NodeType.DIAL, ctx.last.type}
+                ctx.last.type in cls._DIRS
+                and node.type in cls._DIRS_C
                 and not ctx.last.match.get("end")
             ):
                 text = f"{ctx.last.text.strip()} {node.text.strip()}"
