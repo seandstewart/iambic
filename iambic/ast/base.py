@@ -8,7 +8,14 @@ import ujson as json
 import re
 
 
-__all__ = ("NodeType", "NodeToken", "NodeMixin", "jsonify", "NODE_PATTERN")
+__all__ = (
+    "NodeType",
+    "NodeToken",
+    "NodeMixin",
+    "jsonify",
+    "NODE_PATTERN",
+    "JOIN_TOKENS",
+)
 
 
 class NodeType(str, enum.Enum):
@@ -36,8 +43,12 @@ class NodeToken(str, enum.Enum):
 
     JOIN1 = "…"
     JOIN2 = "..."
+    JOIN = "/"
     META1 = "---"
     META2 = "..."
+
+
+JOIN_TOKENS = (NodeToken.JOIN, NodeToken.JOIN1, NodeToken.JOIN2)
 
 
 NODE_PATTERN = re.compile(
@@ -63,7 +74,7 @@ NODE_PATTERN = re.compile(
         )+([A-Z]|\d)*))[*_]{2}                          |
         # Enter/Exit/Action/Direction
         (
-            (?P<start>^[_*]\[?)?
+            (?P<start>^[_*]\\?\[?)?
                 (
                     (
                         (?P<entrance>(enter)((?![_*\[\]]).)*)

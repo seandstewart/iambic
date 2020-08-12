@@ -15,6 +15,7 @@ from iambic.ast import (
     NodeType,
     Play,
     InputType,
+    JOIN_TOKENS,
     ResolvedNodeT,
     Index,
     NodeToken,
@@ -173,10 +174,8 @@ class Parser:
         """Check the current line-count and line-part of a given node & context."""
         if node.type == NodeType.DIAL:
             text = node.text.strip()
-            continued = text.endswith(NodeToken.JOIN1) or text.endswith(NodeToken.JOIN2)
-            continuing = text.startswith(NodeToken.JOIN1) or text.startswith(
-                NodeToken.JOIN2
-            )
+            continued = any(text.endswith(join) for join in JOIN_TOKENS)
+            continuing = any(text.startswith(join) for join in JOIN_TOKENS)
             # started a line-continuation or isn't a line-continuation
             if (continued and not continuing) or (not continued and not continuing):
                 node.lineno = ctx.lineno = ctx.lineno + 1
