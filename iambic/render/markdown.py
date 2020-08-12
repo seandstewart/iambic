@@ -65,6 +65,7 @@ def iter_speech(speech: ast.Speech, persona: ast.Persona) -> Iterable[str]:
                 yield ""
             # yield the line with a link
             yield f"{line}  "
+            last = line
         elif isinstance(entry, (ast.Direction, ast.Entrance)):
             # Build a new linked paragraph for stage directions
             if last:
@@ -73,18 +74,18 @@ def iter_speech(speech: ast.Speech, persona: ast.Persona) -> Iterable[str]:
                     speech_linked = True
                 yield ""
             yield from iter_stage_direction(entry)
+            last = entry.action if isinstance(entry, ast.Direction) else entry.text
         else:
             # Otherwise continue building the speech.
             line = entry.line
+            last = line
             if entry.linepart:
-                last = line
                 if entry.lineno in _seen_lines_by_no:
                     line, last = _indent_shared_line(
                         entry.line, _seen_lines_by_no[entry.lineno]
                     )
                 _seen_lines_by_no[entry.lineno] = last
             yield f"{line}  "
-        last = entry
     if not speech_linked:
         yield ID.format(speech.id)
     yield ""
