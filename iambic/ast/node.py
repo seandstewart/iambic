@@ -527,7 +527,7 @@ ResolvedNodeT = Union[
     Speech,
     Intermission,
 ]
-SpeechNodeT = Union[Dialogue, Action, Direction]
+SpeechNodeT = Union[Dialogue, Action, Direction, Entrance, Exit]
 SpeechBodyT = Tuple[SpeechNodeT, ...]
 ActNodeT = Union[Scene, Intermission, Epilogue, Prologue]
 ActBodyT = Tuple[ActNodeT, ...]

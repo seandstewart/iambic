@@ -26,7 +26,6 @@ IndexKeyT = Union[ast.NodeType, str]
 IndexInputT = Union[
     Mapping[str, ast.GenericNode], Iterable[Tuple[str, ast.GenericNode]]
 ]
-SpeechMemberT = Union[ast.Action, ast.Dialogue, ast.Direction]
 
 
 class Index(Dict[str, Union[ast.ResolvedNodeT, ast.GenericNode]]):
@@ -123,29 +122,47 @@ class Index(Dict[str, Union[ast.ResolvedNodeT, ast.GenericNode]]):
             present = (*(p.id for t, p in personae.items() if t in member.text),)
             member.personae = present
 
+    _NP = {ast.NodeType.DIR, ast.NodeType.ENTER, ast.NodeType.EXIT}
+
+    def _resolve_events(
+        self,
+        speech: List[ast.SpeechNodeT],
+        associates: Set[Union[ast.Direction, ast.Entrance, ast.Exit]],
+    ):
+        start, end = speech[0].index, speech[-1].index
+        events = {e for e in associates if start < e.index < end}
+        associates -= events
+        speech.extend(events)
+
     def get_speeches(self) -> List[ast.Speech]:
         # Candidates for members of speeches.
-        members: List[ast.SpeechNodeT] = sorted(
-            chain(self.dialogue, self.directions, self.actions), key=ast.indexgetter
+        members: List[Union[ast.Dialogue, ast.Action]] = sorted(
+            chain(self.dialogue, self.actions), key=ast.indexgetter,
         )
+        associates: Set[Union[ast.Direction, ast.Entrance, ast.Exit]] = {
+            *self.directions,
+            *self.entrances,
+            *self.exits,
+        }
         persona: Optional[ast.Persona] = None
         scene: ast.Scene = self[members[0].scene]
-        speech: List[SpeechMemberT] = []
+        speech: List[ast.SpeechNodeT] = []
         speeches: List[ast.Speech] = []
 
-        for node in members:
+        for i, node in enumerate(members):
             # If we're in a new scene, we're definitely in a new speech.
             if node.scene != scene.id:
                 if persona and scene and speech:
+                    self._resolve_events(speech, associates)
                     spch = ast.Speech(
-                        persona.id, scene.id, tuple(speech), speech[0].index
+                        persona.id, scene.id, ast.sort_body(speech), speech[0].index
                     )
                     speeches.append(spch)
                 # Directions aren't directly associated to a persona,
                 # so do not have the persona attr.
                 # BUT they can occur within speeches, so we still have to track them all.
                 persona = (
-                    None if node.type == ast.NodeType.DIR else self[node.persona]  # type: ignore
+                    None if node.type in self._NP else self[node.persona]  # type: ignore
                 )
                 scene, persona, speech = self[node.scene], persona, [node]
                 continue
@@ -162,32 +179,39 @@ class Index(Dict[str, Union[ast.ResolvedNodeT, ast.GenericNode]]):
                     speech.append(node)
                     continue
                 # Otherwise, we have a new persona, meaning we have a new speech.
-                spch = ast.Speech(persona.id, scene.id, tuple(speech), speech[0].index)
+                self._resolve_events(speech, associates)
+                spch = ast.Speech(
+                    persona.id, scene.id, ast.sort_body(speech), speech[0].index
+                )
                 speeches.append(spch)
                 persona, scene, speech = self[node.persona], self[node.scene], [node]
                 continue
-            # If we've set a persona and we come across a Direction,
-            # we can be reasonably sure this dir should be associated to this speech.
-            if node.type == ast.NodeType.DIR and persona:
-                speech.append(node)
         # Once we've exhausted all members, it's possible we have one speech left.
         if persona and scene and speech:
-            spch = ast.Speech(persona.id, scene.id, tuple(speech), speech[0].index)
+            self._resolve_events(speech, associates)
+            spch = ast.Speech(
+                persona.id, scene.id, ast.sort_body(speech), speech[0].index
+            )
             speeches.append(spch)
 
         return speeches
 
-    def filter_directions(self, speeches: Set[ast.Speech]) -> Set[ast.Direction]:
-        speech_directions = {
-            y for x in speeches for y in x.body if isinstance(y, ast.Direction)
+    def claimed_events(
+        self, speeches: Set[ast.Speech]
+    ) -> Set[Union[ast.Direction, ast.Exit, ast.Entrance]]:
+        return {
+            y
+            for x in speeches
+            for y in x.body
+            if isinstance(y, (ast.Direction, ast.Entrance, ast.Exit))
         }
-        return {*self.directions} - speech_directions
 
     def finalize_scenes(self) -> Iterable[ast.ActNodeT]:
         speeches = {*self.get_speeches()}
-        directions = self.filter_directions(speeches)
-        entrances = {*self.entrances}
-        exits = {*self.exits}
+        claimed = self.claimed_events(speeches)
+        directions = {*self.directions} - claimed
+        entrances = {*self.entrances} - claimed
+        exits = {*self.exits} - claimed
         children = speeches | directions | entrances | exits
         scenes = []
         scene: Union[ast.Scene, ast.Epilogue, ast.Prologue]
@@ -218,9 +242,16 @@ class Index(Dict[str, Union[ast.ResolvedNodeT, ast.GenericNode]]):
         }
         scenes -= logues
         intermission = self.intermission
-        acts: List[ast.PlayNodeT] = [log for log in logues if not log.as_act]
+        # Add the act-level logues which have a Scene-like structure
+        acts: List[ast.PlayNodeT] = [*logues]
         act: ast.PlayNodeT
-        for act in chain(self.acts, (log for log in logues if log.as_act)):  # type: ignore
+        # Get the act-level logues which have an Act-like structure
+        _logues = (
+            log
+            for log in chain(self.prologues, self.epilogues)
+            if not log.body and not log.act
+        )
+        for act in chain(_logues, self.acts):  # type: ignore
             children: Set[
                 Union[ast.Scene, ast.Intermission, ast.Prologue, ast.Epilogue]
             ] = {s for s in scenes if s.act == act.id}
@@ -230,6 +261,8 @@ class Index(Dict[str, Union[ast.ResolvedNodeT, ast.GenericNode]]):
                 if intermission and intermission.act == act.id:
                     children.add(intermission)
                 act.body = ast.sort_body(children)
+                if isinstance(act, (ast.Epilogue, ast.Prologue)):
+                    act.as_act = True
                 acts.append(act)
         return acts
 
