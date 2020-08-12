@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+import functools
 from textwrap import indent
-from typing import Iterable, Mapping, Union, cast
+from typing import Iterable, Mapping, Union, cast, Dict, Tuple
 
 from iambic import ast
 from .table import RichMarker, tabulate, iter_tabs
@@ -14,6 +15,7 @@ ACTION = r"*\[{0}]*"
 CHAR = "**{0}**"
 ID = "{{: id={0} }}"
 LINK = '<a class="headerlink" href="#{0}" title="Permanent link">{1}</a>'
+USPACE = "&nbsp;"  # unicode space to preserve indent
 
 
 def iter_stage_direction(entry: Union[ast.Direction, ast.Entrance]) -> Iterable[str]:
@@ -24,6 +26,24 @@ def iter_stage_direction(entry: Union[ast.Direction, ast.Entrance]) -> Iterable[
     yield f"{line} {link}"
     yield ID.format(entry.id)
     yield ""
+
+
+@functools.lru_cache(maxsize=100_000)
+def _indent_shared_line(line: str, last: str) -> Tuple[str, str]:
+    token = None
+    stripped = line.strip()
+    for join in ast.JOIN_TOKENS:
+        if stripped.startswith(join):
+            token = join
+    if token:
+        last = last.rstrip(token)
+        indent = USPACE * len(last)
+        last = f"{last}{line.rstrip(token)}"
+        return f"{indent}{line}", last
+    return line, last
+
+
+_seen_lines_by_no: Dict[int, str] = {}
 
 
 def iter_speech(speech: ast.Speech, persona: ast.Persona) -> Iterable[str]:
@@ -55,7 +75,15 @@ def iter_speech(speech: ast.Speech, persona: ast.Persona) -> Iterable[str]:
             yield from iter_stage_direction(entry)
         else:
             # Otherwise continue building the speech.
-            yield f"{entry.line}  "
+            line = entry.line
+            if entry.linepart:
+                last = line
+                if entry.lineno in _seen_lines_by_no:
+                    line, last = _indent_shared_line(
+                        entry.line, _seen_lines_by_no[entry.lineno]
+                    )
+                _seen_lines_by_no[entry.lineno] = last
+            yield f"{line}  "
         last = entry
     if not speech_linked:
         yield ID.format(speech.id)
@@ -116,14 +144,17 @@ def iter_table(play: ast.Play) -> Iterable[str]:
 
 
 def iter_play(play: ast.Play, table: bool = True) -> Iterable[str]:
-    personae = {p.id: p for p in play.personae}
-    if play.meta.title:
-        yield f"# {play.meta.title}"
-        yield ""
-    if table:
-        yield from iter_table(play)
-    for act in play.body:
-        yield from iter_act(act, personae)
+    try:
+        personae = {p.id: p for p in play.personae}
+        if play.meta.title:
+            yield f"# {play.meta.title}"
+            yield ""
+        if table:
+            yield from iter_table(play)
+        for act in play.body:
+            yield from iter_act(act, personae)
+    finally:
+        _seen_lines_by_no.clear()
 
 
 def render_markdown(play: ast.Play, *, table: bool = True) -> str:

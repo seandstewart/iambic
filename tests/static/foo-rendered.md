@@ -25,16 +25,16 @@
         - Bar ⇒ [💬](#act-i-scene-i-i-bar-speech-6-6-22)
 
     === "I: Epilogue"
-        - Foo ⇒ [💬](#act-i-epilogue-33-foo-speech-8-8-36)
-        - Bar ⇒ [👁️‍🗨️](#act-i-epilogue-33-entrance-34)
+        - Foo ⇒ [💬](#act-i-epilogue-35-foo-speech-8-8-38)
+        - Bar ⇒ [👁️‍🗨️](#act-i-epilogue-35-entrance-36)
 
     === "Full Breakdown"
         | Dramatis Personae   |   First Appearance |   Lines | Prologue                                 | I: Prologue                                | Intermission   | I: i                                     | I: Epilogue                                |
         |---------------------|--------------------|---------|------------------------------------------|--------------------------------------------|----------------|------------------------------------------|--------------------------------------------|
-        | Foo                 |                  2 |       5 | [💬](#prologue-0-foo-speech-1-1-3)       |                                            |                | [💬](#act-i-scene-i-i-foo-speech-5-5-19) | [💬](#act-i-epilogue-33-foo-speech-8-8-36) |
+        | Foo                 |                  2 |       5 | [💬](#prologue-0-foo-speech-1-1-3)       |                                            |                | [💬](#act-i-scene-i-i-foo-speech-5-5-19) | [💬](#act-i-epilogue-35-foo-speech-8-8-38) |
         | A Bar               |                  4 |       1 | [💬](#prologue-0-a-bar-speech-2-2-5)     |                                            |                |                                          |                                            |
         | Bar's Foo           |                  6 |       1 | [💬](#prologue-0-bar-s-foo-speech-3-3-7) |                                            |                |                                          |                                            |
-        | Bar                 |                 12 |       3 |                                          | [💬](#act-i-prologue-10-bar-speech-4-4-13) |                | [💬](#act-i-scene-i-i-bar-speech-6-6-22) | [👁️‍🗨️](#act-i-epilogue-33-entrance-34)       |
+        | Bar                 |                 12 |       3 |                                          | [💬](#act-i-prologue-10-bar-speech-4-4-13) |                | [💬](#act-i-scene-i-i-bar-speech-6-6-22) | [👁️‍🗨️](#act-i-epilogue-35-entrance-36)       |
 
 
 ## Prologue {: id=prologue-0 }
@@ -96,29 +96,34 @@ Foo.
 Bar. ...  
 {: id=act-i-scene-i-i-foo-speech-7-7-24 }
 
-**Bar** <a class="headerlink" href="#act-i-scene-i-i-bar-speech-7-7-26" title="Permanent link">(7, 7)</a>  
-... Foo. ...  
-{: id=act-i-scene-i-i-bar-speech-7-7-26 }
 
-**Foo** <a class="headerlink" href="#act-i-scene-i-i-foo-speech-7-7-28" title="Permanent link">(7, 7)</a>  
-... Bar.  
-{: id=act-i-scene-i-i-foo-speech-7-7-28 }
+*Thunder and lightning, very very frightening* <a class="headerlink" href="#act-i-scene-i-i-direction-25" title="Permanent link">👁️‍🗨️</a>
+{: id=act-i-scene-i-i-direction-25 }
 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;... Bar! ...  
 
-*A long stage direction that goes on forever and says far to much to be reasonable. So much so that it takes up more than two lines, which is just ridiculous. I mean seriously, why? Why write so much for one stage direction? For what purpose?* <a class="headerlink" href="#act-i-scene-i-i-direction-29" title="Permanent link">👁️‍🗨️</a>
-{: id=act-i-scene-i-i-direction-29 }
+**Bar** <a class="headerlink" href="#act-i-scene-i-i-bar-speech-7-7-28" title="Permanent link">(7, 7)</a>  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;... Foo. ...  
+{: id=act-i-scene-i-i-bar-speech-7-7-28 }
 
-
-
-### EPILOGUE {: id=act-i-epilogue-33 }
+**Foo** <a class="headerlink" href="#act-i-scene-i-i-foo-speech-7-7-30" title="Permanent link">(7, 7)</a>  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;... Bar.  
+{: id=act-i-scene-i-i-foo-speech-7-7-30 }
 
 
-*Enter FOO and BAR* <a class="headerlink" href="#act-i-epilogue-33-entrance-34" title="Permanent link">👁️‍🗨️</a>
-{: id=act-i-epilogue-33-entrance-34 }
+*A long stage direction that goes on forever and says far to much to be reasonable. So much so that it takes up more than two lines, which is just ridiculous. I mean seriously, why? Why write so much for one stage direction? For what purpose?* <a class="headerlink" href="#act-i-scene-i-i-direction-31" title="Permanent link">👁️‍🗨️</a>
+{: id=act-i-scene-i-i-direction-31 }
 
-**Foo** <a class="headerlink" href="#act-i-epilogue-33-foo-speech-8-8-36" title="Permanent link">(8, 8)</a>  
+
+### EPILOGUE {: id=act-i-epilogue-35 }
+
+
+*Enter FOO and BAR* <a class="headerlink" href="#act-i-epilogue-35-entrance-36" title="Permanent link">👁️‍🗨️</a>
+{: id=act-i-epilogue-35-entrance-36 }
+
+**Foo** <a class="headerlink" href="#act-i-epilogue-35-foo-speech-8-8-38" title="Permanent link">(8, 8)</a>  
 *\[Reads]*  
 Foo.  
-{: id=act-i-epilogue-33-foo-speech-8-8-36 }
+{: id=act-i-epilogue-35-foo-speech-8-8-38 }
 
 

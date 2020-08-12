@@ -63,11 +63,11 @@ class Corpus:
         )
 
     def get(
-        self, item: str, default: str = None, *, parsed: bool = False, tree: bool = True
+        self, item: str, default: str = None, *, parsed: bool = False
     ) -> Optional[Union[str, ast.Play, ast.Index]]:
         try:
             text = self[item]
-            return parse.text(text, tree=tree) if parsed else text
+            return parse.text(text) if parsed else text
         except KeyError:
             return default
 

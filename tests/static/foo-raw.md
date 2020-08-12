@@ -6,7 +6,7 @@ title: "Foo"
 
 ## Prologue
 
-_Enter FOO_
+*Enter FOO*
 
 **FOO**  
 Bar.
@@ -17,26 +17,26 @@ Bar!
 **Bar's Foo**  
 Foo!
 
-_Exeunt_
+*Exeunt*
 
 ## ACT I
 
 ### Prologue
 
-_Enter BAR_
+*Enter BAR*
 
 **BAR**  
-_[Aside]_  
+*\[Aside]*  
 Foo.
 
 ## INTERMISSION
 
 ### SCENE I. A place of meeting.
 
-_Enter FOO and BAR_
+*Enter FOO and BAR*
 
 **FOO**  
-_[To BAR]_  
+*\[To BAR]*  
 Bar.
 
 **BAR**  
@@ -46,21 +46,25 @@ Foo.
 **FOO**  
 Bar. ...
 
+*Thunder and lightning, very very frightening*
+
+... Bar! ...
+
 **BAR**  
 ... Foo. ...
 
 **FOO**  
 ... Bar.
 
-_A long stage direction that goes on forever and says far to much to be
+*A long stage direction that goes on forever and says far to much to be
 reasonable. So much so that it takes up more than two lines, which is
 just ridiculous. I mean seriously, why? Why write so much for one stage
-direction? For what purpose?_
+direction? For what purpose?*
 
 # EPILOGUE
 
-_Enter FOO and BAR_
+*Enter FOO and BAR*
 
 **FOO**  
-_[Reads]_  
+*\[Reads]*  
 Foo.
