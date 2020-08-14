@@ -117,7 +117,8 @@ class Scene(NodeMixin):
         if pre:
             pieces = pre.split("-")
             if len(pieces) == 2:
-                pre = f"{pieces[1].upper()}: "
+                pre = pieces[1] if pre.startswith("act") else pieces[0][0]
+                pre = f"{pre.upper()}: "
             else:
                 pre = f"{pieces[0].title()}: "
         return f"{pre}{roman.numeral(self.num).lower()}"
