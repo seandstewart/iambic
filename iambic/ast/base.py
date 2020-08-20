@@ -1,18 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 import enum
-import functools
-
-import typic
-import ujson as json
 import re
 
 
 __all__ = (
     "NodeType",
     "NodeToken",
-    "NodeMixin",
-    "jsonify",
     "NODE_PATTERN",
     "JOIN_TOKENS",
 )
@@ -92,12 +86,3 @@ NODE_PATTERN = re.compile(
     """,
     re.VERBOSE | re.IGNORECASE | re.MULTILINE,
 )
-
-
-jsonify = functools.partial(json.dumps, indent=2)
-
-
-class NodeMixin:
-    @typic.cached_property
-    def klass(self):
-        return type(self).__name__.lower()

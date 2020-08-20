@@ -1,41 +1,60 @@
 # Foo
 
-## Character Index
+## Overview
 
-???+ "Character Index"
+???+ "High-Level Stats"
 
-    === "Dramatis Personae"
-        - Foo (5 lines)
-        - A Bar (1 lines)
-        - Bar's Foo (1 lines)
-        - Bar (3 lines)
+    **Total Lines:** 8  
+    **Total Characters:** 4  
+    **Total Scenes:** 5  
+
+???+ "Publication Information"
+
+    **Rights:** Creative Commons Non-Commercial Share Alike 3.0  
+    **Language:** en-GB-emodeng  
+    **Publisher:** Published w/ ❤️ using iambic - https://pypi.org/project/iambic  
+    **Title:** Foo  
+    **Edition:** 1  
+    **Author:** William Shakespeare  
+
+## Index
+
+???+ "Dramatis Personae (Order of Appearance)"
+
+    - Foo (5 lines)
+    - A Bar (1 lines)
+    - Bar's Foo (1 lines)
+    - Bar (3 lines)
+
+???+ "Character Navigation"
 
     === "Prologue"
-        - Foo ⇒ [💬](#prologue-0-foo-speech-1-1-3)
-        - A Bar ⇒ [💬](#prologue-0-a-bar-speech-2-2-5)
-        - Bar's Foo ⇒ [💬](#prologue-0-bar-s-foo-speech-3-3-7)
+        - [Foo ⇒ 💬](#prologue-0-foo-speech-1-1-3)
+        - [A Bar ⇒ 💬](#prologue-0-a-bar-speech-2-2-5)
+        - [Bar's Foo ⇒ 💬](#prologue-0-bar-s-foo-speech-3-3-7)
 
     === "I: Prologue"
-        - Bar ⇒ [💬](#act-i-prologue-10-bar-speech-4-4-13)
+        - [Bar ⇒ 💬](#act-i-prologue-10-bar-speech-4-4-13)
 
     === "Intermission"
 
     === "I: i"
-        - Foo ⇒ [💬](#act-i-scene-i-i-foo-speech-5-5-19)
-        - Bar ⇒ [💬](#act-i-scene-i-i-bar-speech-6-6-22)
+        - [Foo ⇒ 💬](#act-i-scene-i-i-foo-speech-5-5-19)
+        - [Bar ⇒ 💬](#act-i-scene-i-i-bar-speech-6-6-22)
 
     === "I: Epilogue"
-        - Foo ⇒ [💬](#act-i-epilogue-35-foo-speech-8-8-38)
-        - Bar ⇒ [👁️‍🗨️](#act-i-epilogue-35-entrance-36)
+        - [Foo ⇒ 💬](#act-i-epilogue-35-foo-speech-8-8-38)
+        - [Bar ⇒ 👁️‍🗨️](#act-i-epilogue-35-entrance-36)
 
-    === "Full Breakdown"
-        | Dramatis Personae   |   First Appearance |   Lines | Prologue                                 | I: Prologue                                | Intermission   | I: i                                     | I: Epilogue                                |
-        |---------------------|--------------------|---------|------------------------------------------|--------------------------------------------|----------------|------------------------------------------|--------------------------------------------|
-        | Foo                 |                  2 |       5 | [💬](#prologue-0-foo-speech-1-1-3)       |                                            |                | [💬](#act-i-scene-i-i-foo-speech-5-5-19) | [💬](#act-i-epilogue-35-foo-speech-8-8-38) |
-        | A Bar               |                  4 |       1 | [💬](#prologue-0-a-bar-speech-2-2-5)     |                                            |                |                                          |                                            |
-        | Bar's Foo           |                  6 |       1 | [💬](#prologue-0-bar-s-foo-speech-3-3-7) |                                            |                |                                          |                                            |
-        | Bar                 |                 12 |       3 |                                          | [💬](#act-i-prologue-10-bar-speech-4-4-13) |                | [💬](#act-i-scene-i-i-bar-speech-6-6-22) | [👁️‍🗨️](#act-i-epilogue-35-entrance-36)       |
 
+??? "Character Navigation (Grid)"
+
+    | Dramatis Personae   |   First Appearance |   Lines | Prologue                                 | I: Prologue                                | Intermission   | I: i                                     | I: Epilogue                                |
+    |---------------------|--------------------|---------|------------------------------------------|--------------------------------------------|----------------|------------------------------------------|--------------------------------------------|
+    | Foo                 |                  2 |       5 | [💬](#prologue-0-foo-speech-1-1-3)       |                                            |                | [💬](#act-i-scene-i-i-foo-speech-5-5-19) | [💬](#act-i-epilogue-35-foo-speech-8-8-38) |
+    | A Bar               |                  4 |       1 | [💬](#prologue-0-a-bar-speech-2-2-5)     |                                            |                |                                          |                                            |
+    | Bar's Foo           |                  6 |       1 | [💬](#prologue-0-bar-s-foo-speech-3-3-7) |                                            |                |                                          |                                            |
+    | Bar                 |                 12 |       3 |                                          | [💬](#act-i-prologue-10-bar-speech-4-4-13) |                | [💬](#act-i-scene-i-i-bar-speech-6-6-22) | [👁️‍🗨️](#act-i-epilogue-35-entrance-36)       |
 
 ## Prologue {: id=prologue-0 }
 

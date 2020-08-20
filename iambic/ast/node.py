@@ -20,7 +20,7 @@ import typic
 from inflection import parameterize, titleize
 
 from iambic import roman
-from .base import NodeType, NodeMixin
+from .base import NodeType
 
 
 __all__ = (
@@ -69,8 +69,8 @@ def sort_body(body: Iterable[_T]) -> Tuple[_T, ...]:
     return tuple(sorted(body, key=indexgetter))
 
 
-@typic.klass(unsafe_hash=True, order=True)
-class Act(NodeMixin):
+@typic.klass(unsafe_hash=True, order=True, slots=True)
+class Act:
     """A representation of a single Act in a Play."""
 
     type: ClassVar[NodeType] = NodeType.ACT
@@ -94,8 +94,8 @@ class Act(NodeMixin):
         return cls(index=node.index, text=node.match_text, num=num)
 
 
-@typic.klass(unsafe_hash=True)
-class Scene(NodeMixin):
+@typic.klass(unsafe_hash=True, slots=True)
+class Scene:
     """A representation of a single Scene in a play."""
 
     type: ClassVar[NodeType] = NodeType.SCENE
@@ -140,8 +140,8 @@ class Scene(NodeMixin):
         )
 
 
-@typic.klass(unsafe_hash=True)
-class Prologue(NodeMixin):
+@typic.klass(unsafe_hash=True, slots=True)
+class Prologue:
     """A representation of a single Prologue in a play.
 
     Notes:
@@ -188,7 +188,7 @@ class Prologue(NodeMixin):
         )
 
 
-@typic.klass(unsafe_hash=True)
+@typic.klass(unsafe_hash=True, slots=True)
 class Epilogue(Prologue):
     """A representation of a single Epilogue in a play.
 
@@ -199,8 +199,8 @@ class Epilogue(Prologue):
     type: ClassVar[NodeType] = NodeType.EPIL
 
 
-@typic.klass(unsafe_hash=True)
-class Intermission(NodeMixin):
+@typic.klass(unsafe_hash=True, slots=True)
+class Intermission:
     """A representation of an Intermission in a play."""
 
     type: ClassVar[NodeType] = NodeType.INTER
@@ -223,8 +223,8 @@ class Intermission(NodeMixin):
         return titleize(self.text)
 
 
-@typic.klass(unsafe_hash=True)
-class Persona(NodeMixin):
+@typic.klass(unsafe_hash=True, slots=True)
+class Persona:
     """A representation of a single character in a Play."""
 
     type: ClassVar[NodeType] = NodeType.PERS
@@ -247,8 +247,8 @@ class Persona(NodeMixin):
         )
 
 
-@typic.klass(unsafe_hash=True)
-class Entrance(NodeMixin):
+@typic.klass(unsafe_hash=True, slots=True)
+class Entrance:
     """A representation of an entrance for character(s) in a Scene."""
 
     type: ClassVar[NodeType] = NodeType.ENTER
@@ -268,15 +268,15 @@ class Entrance(NodeMixin):
         return cls(index=node.index, text=node.match_text, scene=node.parent)
 
 
-@typic.klass(unsafe_hash=True)
+@typic.klass(unsafe_hash=True, slots=True)
 class Exit(Entrance):
     """A representation of an exit for character(s) in a Scene."""
 
     type: ClassVar[NodeType] = NodeType.EXIT
 
 
-@typic.klass(unsafe_hash=True)
-class Action(NodeMixin):
+@typic.klass(unsafe_hash=True, slots=True)
+class Action:
     """A representation of a stage direction related to a specific character."""
 
     type: ClassVar[NodeType] = NodeType.ACTION
@@ -301,8 +301,8 @@ class Action(NodeMixin):
         )
 
 
-@typic.klass(unsafe_hash=True)
-class Direction(NodeMixin):
+@typic.klass(unsafe_hash=True, slots=True)
+class Direction:
     """A representation of a stage direction."""
 
     type: ClassVar[NodeType] = NodeType.DIR
@@ -322,8 +322,8 @@ class Direction(NodeMixin):
         return cls(action=node.match_text, scene=node.parent, index=node.index)
 
 
-@typic.klass(unsafe_hash=True)
-class Dialogue(NodeMixin):
+@typic.klass(unsafe_hash=True, slots=True)
+class Dialogue:
     """A representation of a line of dialogue for a character in a scene."""
 
     type: ClassVar[NodeType] = NodeType.DIAL
@@ -354,8 +354,8 @@ class Dialogue(NodeMixin):
         )
 
 
-@typic.klass(unsafe_hash=True)
-class Speech(NodeMixin):
+@typic.klass(unsafe_hash=True, slots=True)
+class Speech:
     """A representation of an unbroken piece of dialogue related to a single character."""
 
     type: ClassVar[NodeType] = NodeType.SPCH
@@ -388,8 +388,8 @@ class Speech(NodeMixin):
         )
 
 
-@typic.klass(unsafe_hash=True)
-class Metadata(NodeMixin):
+@typic.klass(unsafe_hash=True, slots=True)
+class Metadata:
     """General information about a given play."""
 
     type: ClassVar[NodeType] = NodeType.META
@@ -428,8 +428,8 @@ class Metadata(NodeMixin):
         return dikt
 
 
-@typic.klass(unsafe_hash=True)
-class Play(NodeMixin):
+@typic.klass(unsafe_hash=True, slots=True)
+class Play:
     """A representation of a play in its entirety."""
 
     type: ClassVar[NodeType] = NodeType.PLAY
@@ -444,9 +444,22 @@ class Play(NodeMixin):
     def id(self) -> NodeID:
         return NodeID(parameterize(f"{self.meta.title}-{self.type.lower()}"))
 
+    @typic.cached_property
+    def linecount(self) -> int:
+        count = 0
+        final = self.body[-1]
+        scene = final.body[-1] if isinstance(final, Act) else final
+        if isinstance(scene, Intermission):
+            raise ValueError(f"A Play may not end with an Intermission: {scene}")
+        for entry in reversed(scene.body):
+            if isinstance(entry, Speech):
+                count = entry.linerange[-1]
+                break
+        return count
 
-@typic.klass(unsafe_hash=True)
-class GenericNode(NodeMixin):
+
+@typic.klass(unsafe_hash=True, slots=True)
+class GenericNode:
     """The root-object of a script.
 
     A script ``Node`` represents a single line of text in a script.

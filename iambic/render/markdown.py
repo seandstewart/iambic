@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+import dataclasses
 import functools
 from textwrap import indent
 from typing import Iterable, Mapping, Union, cast, Dict, Tuple
 
+from inflection import titleize
+
 from iambic import ast
-from .table import RichMarker, tabulate, iter_tabs
+from .table import RichMarker, tabulate, iter_tabs, export_grid, Column
 
 TITLE = "# {0}"
 ACT = "## {0}"
@@ -133,25 +136,77 @@ def iter_act(
     yield ""
 
 
-def iter_table(play: ast.Play) -> Iterable[str]:
+def iter_stats(play: ast.Play) -> Iterable[str]:
+    linecount = play.linecount
+    scenes = sum(
+        len(a.body)
+        if isinstance(a, ast.Act)
+        or (isinstance(a, (ast.Prologue, ast.Epilogue)) and a.as_act)
+        else 1
+        for a in play.body
+    )
+    yield '???+ "High-Level Stats"'
+    yield ""
+    yield f"    **Total Lines:** {linecount}  "
+    yield f"    **Total Characters:** {len(play.personae)}  "
+    yield f"    **Total Scenes:** {scenes}  "
+    yield ""
+
+
+def iter_meta(meta: ast.Metadata) -> Iterable[str]:
+    yield '???+ "Publication Information"'
+    yield ""
+    for field in dataclasses.fields(meta):
+        value = getattr(meta, field.name)
+        if value:
+            pre = f"    **{titleize(field.name)}:** "
+            if isinstance(value, tuple):
+                yield pre + " "
+                for item in value:
+                    yield f"    - {item}"
+            else:
+                yield f"{pre}{value}  "
+    yield ""
+
+
+def iter_character_index(play: ast.Play):
     tbl = tabulate(play, links=True, rich=True)
-    yield ACT.format("Character Index")
+    characters, lines = tbl[Column.CHAR], tbl[Column.CLINE]
+    yield '???+ "Dramatis Personae (Order of Appearance)"'
     yield ""
-    yield '???+ "Character Index"'
+    for character, line_count in zip(characters, lines):
+        yield f"    - {character} ({line_count} lines)"
     yield ""
-    for line in iter_tabs(tbl):
+    yield '???+ "Character Navigation"'
+    yield ""
+    for line in iter_tabs(tbl, include_grid=False):
         yield indent(line, "    ")
     yield ""
+    yield '??? "Character Navigation (Grid)"'
+    yield ""
+    yield indent(export_grid(tbl), "    ")
 
 
-def iter_play(play: ast.Play, table: bool = True) -> Iterable[str]:
+def iter_overview(play: ast.Play) -> Iterable[str]:
+
+    yield ACT.format("Overview")
+    yield ""
+    yield from iter_stats(play)
+    yield from iter_meta(play.meta)
+    yield ACT.format("Index")
+    yield ""
+    yield from iter_character_index(play)
+    yield ""
+
+
+def iter_play(play: ast.Play, overview: bool = True) -> Iterable[str]:
     try:
         personae = {p.id: p for p in play.personae}
         if play.meta.title:
             yield f"# {play.meta.title}"
             yield ""
-        if table:
-            yield from iter_table(play)
+        if overview:
+            yield from iter_overview(play)
         for act in play.body:
             yield from iter_act(act, personae)
     finally:
@@ -169,4 +224,4 @@ def render_markdown(play: ast.Play, *, table: bool = True) -> str:
     table : default True
         Optionally render a character mapping for your play.
     """
-    return "\n".join(iter_play(play, table=table))
+    return "\n".join(iter_play(play, overview=table))
