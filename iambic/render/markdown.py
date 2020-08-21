@@ -171,12 +171,7 @@ def iter_meta(meta: ast.Metadata) -> Iterable[str]:
 
 def iter_character_index(play: ast.Play):
     tbl = tabulate(play, links=True, rich=True)
-    characters, lines = tbl[Column.CHAR], tbl[Column.CLINE]
-    yield '???+ "Dramatis Personae (Order of Appearance)"'
-    yield ""
-    for character, line_count in zip(characters, lines):
-        yield f"    - {character} ({line_count} lines)"
-    yield ""
+
     yield '???+ "Character Navigation"'
     yield ""
     for line in iter_tabs(tbl, include_grid=False):
@@ -185,6 +180,19 @@ def iter_character_index(play: ast.Play):
     yield '??? "Character Navigation (Grid)"'
     yield ""
     yield indent(export_grid(tbl), "    ")
+    yield ""
+    yield '??? "Dramatis Personae"'
+    yield ""
+    yield '    === "Order of Appearance"'
+    for character, line_count in zip(tbl[Column.CHAR], tbl[Column.CLINE]):
+        yield f"        - {character} ({line_count} lines)"
+    yield ""
+    yield '    === "Number of Lines"'
+    for character, line_count in sorted(
+        zip(tbl[Column.CHAR], tbl[Column.CLINE]), key=lambda cl: cl[-1], reverse=True
+    ):
+        yield f"        - {character} ({line_count} lines)"
+    yield ""
 
 
 def iter_overview(play: ast.Play) -> Iterable[str]:

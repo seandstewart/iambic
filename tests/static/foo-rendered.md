@@ -19,13 +19,6 @@
 
 ## Index
 
-???+ "Dramatis Personae (Order of Appearance)"
-
-    - Foo (5 lines)
-    - A Bar (1 lines)
-    - Bar's Foo (1 lines)
-    - Bar (3 lines)
-
 ???+ "Character Navigation"
 
     === "Prologue"
@@ -55,6 +48,21 @@
     | A Bar               |                  4 |       1 | [💬](#prologue-0-a-bar-speech-2-2-5)     |                                            |                |                                          |                                            |
     | Bar's Foo           |                  6 |       1 | [💬](#prologue-0-bar-s-foo-speech-3-3-7) |                                            |                |                                          |                                            |
     | Bar                 |                 12 |       3 |                                          | [💬](#act-i-prologue-10-bar-speech-4-4-13) |                | [💬](#act-i-scene-i-i-bar-speech-6-6-22) | [👁️‍🗨️](#act-i-epilogue-35-entrance-36)       |
+
+??? "Dramatis Personae"
+
+    === "Order of Appearance"
+        - Foo (5 lines)
+        - A Bar (1 lines)
+        - Bar's Foo (1 lines)
+        - Bar (3 lines)
+
+    === "Number of Lines"
+        - Foo (5 lines)
+        - Bar (3 lines)
+        - A Bar (1 lines)
+        - Bar's Foo (1 lines)
+
 
 ## Prologue {: id=prologue-0 }
 
