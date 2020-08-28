@@ -6,7 +6,7 @@ is assigned a specific `type` based upon simple syntactical rules.
 These rules can be broken out into the following logical groups:
 
 ## 1. Locales
-A `Locale` will be denoted by header formatting (H1-5) and 
+A `Locale` will be denoted by header formatting (H1-5) and
 represents a logical break in the forward action of the
 play. These can be thought of as the entries that may show
 up in a Table of Contents, and can include:
@@ -25,7 +25,7 @@ A `Prologue` or `Epilogue` may or may not be nested under an
 
 
 ## 2. Actions and Directions
-Actions and Directions will be denoted by an _italicized_ 
+Actions and Directions will be denoted by an _italicized_
 paragraph of any length and represent a physical action that
 takes place on stage. These can include:
 - Character Action (`Action`)
@@ -38,7 +38,7 @@ speech. If these are more than one word (such as *Aside*),
 they will either reference the character by pronoun, or
 begin with *To ...*. In order for `iambic` to understand
 that the given paragraph is an `Action`, the paragraph
-should be wrapped in brackets (`[]`) in addition to
+should be wrapped in brackets (`\[]`) in addition to
 italicized. ex: *\[He brandishes his sword]*, *\[To
 JULIET]*).
 
@@ -48,7 +48,7 @@ some on-stage action between any number of characters. A
 `Direction` will always be written in third-person
 omniscient and reference characters by name and be denoted
 simply by italics. ex: *Flourish*, *They fight*, *HAMLET
-stabs CLAUDIUS*.  
+stabs CLAUDIUS*.
 
 An `Entrance` or `Exit` will usually lead or finish with
 `Enter`, `Exit`, or `Exeunt` and be italicized.

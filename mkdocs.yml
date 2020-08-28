@@ -17,6 +17,7 @@ theme:
   feature:
     tabs: true
 plugins:
+  - search
   - awesome-pages
 markdown_extensions:
   - toc:

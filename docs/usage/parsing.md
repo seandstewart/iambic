@@ -1,7 +1,8 @@
 ## Parsing Text
-`iambic` relies upon a set of standard style tokens for parsing text.
-For an in-depth breakdown of what each detected node means, check out
-[How It Works](../how-it-works.md).
+`iambic` relies upon a set of standard style tokens for parsing text. For an in-depth
+breakdown of what each detected node means, check out
+[How It Works](../how-it-works.md). The final product of parsing a play is a single
+`Play` object, which is *hashable and immutable*.
 
 ## Tokens
 
@@ -9,7 +10,7 @@ For an in-depth breakdown of what each detected node means, check out
 Act, Scene, Epilogue, Prologue, and Intermission sections should be
 wrapped in heading tokens. (`#...` for Markdown,
 `<h(1-...)>...</h(1-...)>` for HTML). i.e.:
-    
+
     ## ACT I
     
     <h1>ACT I</h1>
@@ -23,7 +24,7 @@ wrapped in heading tokens. (`#...` for Markdown,
 ### Bolded
 **Bolded Text** is significant, and is considered a character name,
 i.e.:
-    
+
     **HAMLET**
     
     <b>HAMLET</b>
@@ -45,18 +46,18 @@ character when building the tree.
     <i>Alarum.</i>
     
     // Character 'Action'
-    _[Aside]_
+    _\[Aside]_
     *[Aside]*
     <i>[Aside]</i>
-    
-As a bonus, `iambic` also attempts to detect 
-    
+
+As a bonus, `iambic` also attempts to detect
+
 Multi-line blocks are also supported, as in plain markdown.
 
 
-### Ellipsis
-Ellipses (either `…` or `...`) indicate the beginning and end of a
-"shared" line of poetry, i.e.:
+### Ellipsis or Hanging & Leading "/"
+Ellipses (either `…` or `...`) or a Hanging & Leading "/" indicate the beginning and end
+of a "shared" line of poetry, i.e.:
 
     **MALCOLM**
     Say to the king the knowledge of the broil  
@@ -66,18 +67,36 @@ Ellipses (either `…` or `...`) indicate the beginning and end of a
     ... Doubtful it stood;  
     As two spent swimmers, that do cling together  
 
-`As thou didst leave it. .../... Doubtful it stood;` scan as a single
-line of iambic pentameter. The `...` at the end of a line will signal
-to `iambic` that we are now entering a continuation of the same line.
-`iambic` will track the continuation until the next line fails to
-start or end with a `...`. 
+Or:
 
-`iambic` will also track the owner of every shared line and increment
-their own count of spoken lines. This will not, however, increment the
-total number of lines in a given play. `iambic` will not increment
-again until it detects it has exited the continuation.
-
+    **MALCOLM**
+    Say to the king the knowledge of the broil  
+    As thou didst leave it. /
     
+    **Sergeant**  
+    / Doubtful it stood;  
+    As two spent swimmers, that do cling together  
+
+
+`As thou didst leave it. / / Doubtful it stood;` scan as a single line of iambic
+pentameter. The `/` at the end of a line will signal to `iambic` that we are now
+entering a continuation of the same poetic line. `iambic` will track the continuation
+until the next line fails to start or end with a `/`. As a bonus, when `iambic`
+re-renders this text, it will auto-indent the lines with a non-breaking space, like so:
+
+    **MALCOLM**
+    Say to the king the knowledge of the broil  
+    As thou didst leave it. /
+    
+    **Sergeant**  
+                            / Doubtful it stood;  
+    As two spent swimmers, that do cling together  
+
+`iambic` will also track the owner of every shared line and increment their own count of
+spoken lines. This will not, however, increment the total number of lines in a given
+play. `iambic` will not increment again until it detects it has exited the continuation.
+
+
 ### All Other Text
 Any non-tokenized text will be marked as a single line of dialogue and
 associated to the last character seen.
@@ -87,7 +106,6 @@ associated to the last character seen.
 
 ```
 >>> import iambic
->>> import json
 >>> play = """
 ... ## ACT I
 ... ## SCENE I. A field.
@@ -95,130 +113,122 @@ associated to the last character seen.
 ... _Enter FOO from one side, BAR from another._
 ...
 ... **FOO**
-... Bar. ...
+... Bar. /
 ...
 ... **BAR**
-... ... Foo!
+... / Foo!
 ...
 ... _Exeunt, severally_
 ... """
 ...
 >>> parsed = iambic.parse.text(play, title="Foo")
->>> print(parsed.json)
+>>> print(parsed.tojson(indent=2))
 {
-  "type":"play",
-  "children":[
+  "type": "play",
+  "body": [
     {
-      "type":"tree",
-      "node":{
-        "type":"act",
-        "index":0,
-        "text":"ACT I",
-        "num":1
-      },
-      "children":[
+      "type": "act",
+      "index": 0,
+      "text": "ACT I",
+      "num": 1,
+      "body": [
         {
-          "type":"tree",
-          "node":{
-            "type":"scene",
-            "index":1,
-            "text":"SCENE I",
-            "num":1,
-            "act":"act-i",
-            "setting":null
-          },
-          "children":[
+          "type": "scene",
+          "index": 1,
+          "text": "SCENE I",
+          "num": 1,
+          "setting": "A field.",
+          "act": "act-i",
+          "body": [
             {
-              "type":"entrance",
-              "index":2,
-              "text":"Enter FOO from one side, BAR from another.",
-              "scene":"act-i-scene-i",
-              "personae":[
+              "type": "entrance",
+              "index": 2,
+              "text": "Enter FOO from one side, BAR from another.",
+              "scene": "act-i-scene-i-i",
+              "personae": [
                 "foo",
                 "bar"
               ]
             },
             {
-              "type":"speech",
-              "persona":"foo",
-              "scene":"act-i-scene-i",
-              "speech":[
+              "type": "speech",
+              "persona": "foo",
+              "scene": "act-i-scene-i-i",
+              "body": [
                 {
-                  "type":"dialogue",
-                  "line":"Bar. ...",
-                  "persona":"foo",
-                  "scene":"act-i-scene-i",
-                  "index":4,
-                  "lineno":1,
-                  "linepart":1
+                  "type": "dialogue",
+                  "line": "Bar. \/",
+                  "persona": "foo",
+                  "scene": "act-i-scene-i-i",
+                  "index": 4,
+                  "lineno": 1,
+                  "linepart": 1
                 }
               ],
-              "index":4
+              "index": 4
             },
             {
-              "type":"speech",
-              "persona":"bar",
-              "scene":"act-i-scene-i",
-              "speech":[
+              "type": "speech",
+              "persona": "bar",
+              "scene": "act-i-scene-i-i",
+              "body": [
                 {
-                  "type":"dialogue",
-                  "line":"... Foo!",
-                  "persona":"bar",
-                  "scene":"act-i-scene-i",
-                  "index":6,
-                  "lineno":1,
-                  "linepart":2
+                  "type": "dialogue",
+                  "line": "\/ Foo!",
+                  "persona": "bar",
+                  "scene": "act-i-scene-i-i",
+                  "index": 6,
+                  "lineno": 1,
+                  "linepart": 2
                 }
               ],
-              "index":6
+              "index": 6
             },
             {
-              "type":"exit",
-              "index":7,
-              "text":"Exeunt, severally",
-              "scene":"act-i-scene-i",
-              "personae":[
+              "type": "exit",
+              "index": 7,
+              "text": "Exeunt, severally",
+              "scene": "act-i-scene-i-i",
+              "personae": [
               ]
             }
           ],
-          "personae":[
+          "personae": [
             "foo",
             "bar"
           ]
         }
-      ],
-      "personae":[
       ]
     }
   ],
-  "personae":[
+  "personae": [
     {
-      "type":"persona",
-      "index":3,
-      "text":"FOO",
-      "name":"Foo",
-      "short":null
+      "type": "persona",
+      "index": 3,
+      "text": "FOO",
+      "name": "Foo",
+      "short": null
     },
     {
-      "type":"persona",
-      "index":5,
-      "text":"BAR",
-      "name":"Bar",
-      "short":null
+      "type": "persona",
+      "index": 5,
+      "text": "BAR",
+      "name": "Bar",
+      "short": null
     }
   ],
-  "meta":{
-    "type":"meta",
-    "rights":"Creative Commons Non-Commercial Share Alike 3.0",
-    "language":"en-GB-emodeng",
-    "publisher":"Published w\/ :heart: using iambic - https:\/\/pypi.org\/project\/iambic",
-    "title":"Foo",
-    "subtitle":null,
-    "edition":1,
-    "author":"William Shakespeare",
-    "editors":[
+  "meta": {
+    "type": "meta",
+    "rights": "Creative Commons Non-Commercial Share Alike 3.0",
+    "language": "en-GB-emodeng",
+    "publisher": "Published w\/ ❤️ using iambic - https:\/\/pypi.org\/project\/iambic",
+    "title": null,
+    "subtitle": null,
+    "edition": 1,
+    "author": "William Shakespeare",
+    "editors": [
     ],
-    "tags":[
+    "tags": [
     ]
   }
 }
@@ -229,7 +239,7 @@ associated to the last character seen.
 Iambic is equipped to load valid JSON documents into the ast. For
 instance:
 
-```python
+```
 >>> iambic.parse.data("""{
 ...      "type":"persona",
 ...      "index":3,
@@ -237,7 +247,7 @@ instance:
 ...      "name":"Foo",
 ...      "short":null
 ...    }""")
-Persona(type=<NodeType.PERS: 'persona'>, index=3, text='FOO', name='Foo', short=None)
+Persona(index=3, text='FOO', name='Foo', short=None)
 ```
 
 Nested data is also handled without any additional work.
