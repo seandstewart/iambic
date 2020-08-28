@@ -14,6 +14,7 @@ from typing import (
     TypeVar,
     NewType,
     Iterable,
+    Set,
 )
 
 import typic
@@ -239,6 +240,14 @@ class Persona:
     @typic.cached_property
     def id(self) -> NodeID:
         return NodeID(parameterize(self.name))
+
+    @typic.cached_property
+    def ids(self) -> Set[NodeID]:
+        return {NodeID(parameterize(n.strip())) for n in self.name.split("&")}
+
+    @property
+    def is_multi(self) -> bool:
+        return "&" in self.name
 
     @classmethod
     def from_node(cls, node: "GenericNode") -> "Persona":

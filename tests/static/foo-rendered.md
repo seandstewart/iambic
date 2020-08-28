@@ -4,7 +4,7 @@
 
 ???+ "High-Level Stats"
 
-    **Total Lines:** 8  
+    **Total Lines:** 9  
     **Total Characters:** 4  
     **Total Scenes:** 5  
 
@@ -37,29 +37,29 @@
 
     === "I: Epilogue"
         - [Foo ⇒ 💬](#act-i-epilogue-35-foo-speech-8-8-38)
-        - [Bar ⇒ 👁️‍🗨️](#act-i-epilogue-35-entrance-36)
+        - [Bar ⇒ 💬](#act-i-epilogue-35-foo-bar-speech-9-9-41)
 
 
 ??? "Character Navigation (Grid)"
 
-    | Dramatis Personae   |   First Appearance |   Lines | Prologue                                 | I: Prologue                                | Intermission   | I: i                                     | I: Epilogue                                |
-    |---------------------|--------------------|---------|------------------------------------------|--------------------------------------------|----------------|------------------------------------------|--------------------------------------------|
-    | Foo                 |                  2 |       5 | [💬](#prologue-0-foo-speech-1-1-3)       |                                            |                | [💬](#act-i-scene-i-i-foo-speech-5-5-19) | [💬](#act-i-epilogue-35-foo-speech-8-8-38) |
-    | A Bar               |                  4 |       1 | [💬](#prologue-0-a-bar-speech-2-2-5)     |                                            |                |                                          |                                            |
-    | Bar's Foo           |                  6 |       1 | [💬](#prologue-0-bar-s-foo-speech-3-3-7) |                                            |                |                                          |                                            |
-    | Bar                 |                 12 |       3 |                                          | [💬](#act-i-prologue-10-bar-speech-4-4-13) |                | [💬](#act-i-scene-i-i-bar-speech-6-6-22) | [👁️‍🗨️](#act-i-epilogue-35-entrance-36)       |
+    | Dramatis Personae   |   First Appearance |   Lines | Prologue                                 | I: Prologue                                | Intermission   | I: i                                     | I: Epilogue                                    |
+    |---------------------|--------------------|---------|------------------------------------------|--------------------------------------------|----------------|------------------------------------------|------------------------------------------------|
+    | Foo                 |                  2 |       6 | [💬](#prologue-0-foo-speech-1-1-3)       |                                            |                | [💬](#act-i-scene-i-i-foo-speech-5-5-19) | [💬](#act-i-epilogue-35-foo-speech-8-8-38)     |
+    | A Bar               |                  4 |       1 | [💬](#prologue-0-a-bar-speech-2-2-5)     |                                            |                |                                          |                                                |
+    | Bar's Foo           |                  6 |       1 | [💬](#prologue-0-bar-s-foo-speech-3-3-7) |                                            |                |                                          |                                                |
+    | Bar                 |                 12 |       4 |                                          | [💬](#act-i-prologue-10-bar-speech-4-4-13) |                | [💬](#act-i-scene-i-i-bar-speech-6-6-22) | [💬](#act-i-epilogue-35-foo-bar-speech-9-9-41) |
 
 ??? "Dramatis Personae"
 
     === "Order of Appearance"
-        - Foo (5 lines)
+        - Foo (6 lines)
         - A Bar (1 lines)
         - Bar's Foo (1 lines)
-        - Bar (3 lines)
+        - Bar (4 lines)
 
     === "Number of Lines"
-        - Foo (5 lines)
-        - Bar (3 lines)
+        - Foo (6 lines)
+        - Bar (4 lines)
         - A Bar (1 lines)
         - Bar's Foo (1 lines)
 
@@ -152,5 +152,9 @@ Bar. ...
 *\[Reads]*  
 Foo.  
 {: id=act-i-epilogue-35-foo-speech-8-8-38 }
+
+**Foo & Bar** <a class="headerlink" href="#act-i-epilogue-35-foo-bar-speech-9-9-41" title="Permanent link">(9, 9)</a>  
+Together!  
+{: id=act-i-epilogue-35-foo-bar-speech-9-9-41 }
 
 

@@ -68,3 +68,7 @@ direction? For what purpose?*
 **FOO**  
 *\[Reads]*  
 Foo.
+
+
+**FOO & BAR**  
+Together!

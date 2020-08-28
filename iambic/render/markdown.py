@@ -148,7 +148,7 @@ def iter_stats(play: ast.Play) -> Iterable[str]:
     yield '???+ "High-Level Stats"'
     yield ""
     yield f"    **Total Lines:** {linecount}  "
-    yield f"    **Total Characters:** {len(play.personae)}  "
+    yield f"    **Total Characters:** {len([p for p in play.personae if not p.is_multi])}  "
     yield f"    **Total Scenes:** {scenes}  "
     yield ""
 

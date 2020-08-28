@@ -74,17 +74,19 @@ class Tabulator:
             )
             entry = self.link(marker, child) if links else marker.value
             if isinstance(child, ast.Speech):
-                persona = personae[child.persona]
-                index = char_index[persona.name]
-                cline_column[index] += child.num_lines
-                if marker_type.SPEAK not in node_column[index]:
-                    node_column[index] = entry
+                root = personae[child.persona]
+                for persona in (personae[id] for id in root.ids):
+                    index = char_index[persona.name]
+                    cline_column[index] += child.num_lines
+                    if marker_type.SPEAK not in node_column[index]:
+                        node_column[index] = entry
             elif isinstance(child, ast.Entrance):
                 for pers in child.personae:
-                    persona = personae[pers]
-                    index = char_index[persona.name]
-                    if not node_column[index]:
-                        node_column[index] = entry
+                    root = personae[pers]
+                    for persona in (personae[id] for id in root.ids):
+                        index = char_index[persona.name]
+                        if not node_column[index]:
+                            node_column[index] = entry
 
     @staticmethod
     def link(marker: Union[Marker, RichMarker], node: ast.ResolvedNodeT) -> str:
@@ -106,10 +108,11 @@ class Tabulator:
             }
         """
         marker_type: Type[Union[Marker, RichMarker]] = RichMarker if rich else Marker
+        _personae = [x for x in play.personae if not x.is_multi]
         table: Dict[str, Any] = {
-            Column.CHAR.value: [x.name for x in play.personae],
-            Column.APPR.value: [x.index for x in play.personae],
-            Column.CLINE.value: [0 for _ in play.personae],
+            Column.CHAR.value: [x.name for x in _personae],
+            Column.APPR.value: [x.index for x in _personae],
+            Column.CLINE.value: [0 for _ in _personae],
         }
         char_column: List[str] = table[Column.CHAR.value]
         cline_column: List[int] = table[Column.CLINE.value]
