@@ -37,6 +37,7 @@ generic_persona = ast.GenericNode(ast.NodeType.PERS, "Bar", 0, 0)
         ("_Foo does", ast.NodeType.DIR),
         ("a thing._", ast.NodeType.DIR),
         ("_[Aside]_", ast.NodeType.ACTION),
+        ("_\\[Aside]_", ast.NodeType.ACTION),
         ("_[Stabs foo.]_", ast.NodeType.ACTION),
         ("_Enter Foo, bar._", ast.NodeType.ENTER),
         ("_Exit Foo, bar._", ast.NodeType.EXIT),
@@ -45,7 +46,7 @@ generic_persona = ast.GenericNode(ast.NodeType.PERS, "Bar", 0, 0)
     ],
 )
 def test_text_match(value: str, expected: ast.NodeType):
-    assert parse.text.match(value, 1).type == expected
+    assert parse.text.match(value).type == expected
 
 
 @pytest.mark.parametrize(

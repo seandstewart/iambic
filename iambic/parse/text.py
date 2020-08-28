@@ -84,6 +84,7 @@ class Parser:
 
     LOCALES = frozenset((NodeType.ACT, NodeType.PROL, NodeType.EPIL, NodeType.SCENE))
     _ACTION_BOOKENDS = frozenset(("[", "]"))
+    _NODE_TYPES = frozenset(NodeType)
 
     def __init__(self):
         self.__parser_map = defaultdict(lambda: self.default_handler)
@@ -93,21 +94,20 @@ class Parser:
         self.__parser_map[NodeType.PERS] = self.persona_handler
 
     @classmethod
-    @functools.lru_cache(maxsize=None, typed=True)
-    def match(cls, line: str, index: int) -> _PreNode:
+    @functools.lru_cache(maxsize=1_000_000)
+    def match(cls, line: str) -> _PreNode:
         """Take an individual line from a body of text and determine which
 
-        :py:class:`NodeType` it is."""
+        :py:class:`NodeType` it is.
+        """
         match = NODE_PATTERN.match(line)
         match_dict = (
             {x: y for x, y in match.groupdict().items() if y is not None}
             if match
             else {}
         )
-        node = _PreNode(
-            type=NodeType.DIAL, match={NodeType.DIAL: line}, text=line, index=index
-        )
-        for node_type in {*NodeType} & match_dict.keys():
+        node = _PreNode(type=NodeType.DIAL, match={NodeType.DIAL: line}, text=line)
+        for node_type in cls._NODE_TYPES & match_dict.keys():
             node_type = NodeType(node_type)
             if node_type == NodeType.DIR:
                 bookend = match_dict.get("start") or match_dict.get("end")
@@ -203,7 +203,8 @@ class Parser:
                 and not ctx.last.match.get("end")
             ):
                 text = f"{ctx.last.text.strip()} {node.text.strip()}"
-                node = cls.match(text, ctx.last.index)
+                node = cls.match(text)
+                node.index = ctx.last.index
                 new: GenericNode = dataclasses.replace(
                     ctx.last, match=typic.FrozenDict(node.match), text=text
                 )
@@ -270,14 +271,15 @@ class Parser:
             meta = Metadata(title=title)
         return meta, text
 
-    @functools.lru_cache()
-    def parse(self, text: str, *, input_type: InputType = None,) -> Play:
+    @functools.lru_cache(maxsize=100_000)
+    def parse(self, text: str, *, input_type: InputType = None) -> Play:
         ctx = ParserContext()
         input_type = input_type or self.guess_formatting(text)
         text = (html2text(text) if input_type is InputType.HTML else text).lstrip()
         meta, text = self.extract_metadata(text)
         for ix, line in enumerate(x for x in text.splitlines() if x.strip()):
-            node = self.match(line, ix)
+            node = self.match(line)
+            node.index = ix
             add = self.check_direction(ctx, node)
             if add:
                 self.check_linecount(ctx, node)
