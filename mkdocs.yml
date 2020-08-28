@@ -42,13 +42,12 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
-  - fontawesome_markdown
 extra:
   social:
-    - type: "github"
-      link: "https://github.com/seandstewart/website"
-    - type: "twitter"
-      link: "https://twitter.com/MrSeanStewart"
-    - type: "linkedin"
-      link: "https://linkedin.com/in/seandstewart"
-  manifest: "static/favicon/site.webmanifest"
+  - icon: "fontawesome/brands/github-alt"
+    link: "https://github.com/seandstewart/iambic"
+  - icon: "fontawesome/brands/twitter"
+    link: "https://twitter.com/MrSeanStewart"
+  - icon: "fontawesome/brands/linkedin"
+    link: "https://linkedin.com/in/seandstewart"
+  manifest: "img/site.webmanifest"

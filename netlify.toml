@@ -1,6 +1,5 @@
 [build]
 publish = "site/"
 command = """
-mkdocs build &&
-cp docs/_redirects site/_redirects
+mkdocs build
 """
