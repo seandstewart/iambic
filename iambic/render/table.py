@@ -75,7 +75,7 @@ class Tabulator:
             entry = self.link(marker, child) if links else marker.value
             if isinstance(child, ast.Speech):
                 root = personae[child.persona]
-                for persona in (personae[id] for id in root.ids):
+                for persona in (personae[id] for id in root.ids & personae.keys()):
                     index = char_index[persona.name]
                     cline_column[index] += child.num_lines
                     if marker_type.SPEAK not in node_column[index]:
@@ -83,7 +83,7 @@ class Tabulator:
             elif isinstance(child, ast.Entrance):
                 for pers in child.personae:
                     root = personae[pers]
-                    for persona in (personae[id] for id in root.ids):
+                    for persona in (personae[id] for id in root.ids & personae.keys()):
                         index = char_index[persona.name]
                         if not node_column[index]:
                             node_column[index] = entry
