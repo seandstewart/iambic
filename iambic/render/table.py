@@ -2,16 +2,16 @@
 # -*- coding: UTF-8 -*-
 import enum
 import textwrap
-from typing import List, Dict, Hashable, Tuple, Union, Type, Any, Iterable
+from typing import List, Dict, Tuple, Union, Type, Any, Iterable
 
-import tablib
+import tabulate as _tabulate
 
 from iambic import ast
 
 
-Row = List[Hashable]
+Row = List[str]
 Table = Dict[str, Row]
-Matrix = List[Tuple[Hashable, ...]]
+Matrix = List[Tuple[str, ...]]
 
 
 class Column(str, enum.Enum):
@@ -121,9 +121,11 @@ class Tabulator:
         for act in play.body:
             # Epilogues and Prologues can be shaped like Scenes or Acts.
             # And can be top-level, like Acts.
-            children: ast.ActBodyT = act.body if (  # type: ignore
-                isinstance(act, ast.Act) or act.as_act
-            ) else (act,)
+            children: ast.ActBodyT = (
+                act.body
+                if (isinstance(act, ast.Act) or act.as_act)  # type: ignore
+                else (act,)
+            )
             for scene in children:
 
                 table[scene.col] = [marker_type.NONE.value for _ in char_column]
@@ -141,6 +143,8 @@ class Tabulator:
 
         return table
 
+    __call__ = tabulate
+
     @staticmethod
     def matrix(table: Table) -> Matrix:
         """Pivot a table into a 2-D array (matrix).
@@ -157,18 +161,6 @@ class Tabulator:
         """
         return [(*table.keys(),), *zip(*table.values())]
 
-    def dataset(self, table: Table) -> tablib.Dataset:
-        """Transform a table into an instance of :py:class:`tablib.Dataset`."""
-        pivot = self.matrix(table)
-        headers = pivot.pop(0)
-        return tablib.Dataset(*pivot, headers=headers)
-
-    def __call__(
-        self, play: ast.Play, *, links: bool = False, rich: bool = False
-    ) -> tablib.Dataset:
-        table = self.tabulate(play, links=links, rich=rich)
-        return self.dataset(table)
-
 
 tabulate = Tabulator()
 
@@ -178,7 +170,7 @@ class TableFormat(str, enum.Enum):
     TABS = "tabs"
 
 
-def iter_scene_tab(table: tablib.Dataset, scene_name: str) -> Iterable[str]:
+def iter_scene_tab(table: Table, scene_name: str) -> Iterable[str]:
     characters, scene = table[Column.CHAR], table[scene_name]
     yield f'=== "{scene_name}"'
     for character, marker in zip(characters, scene):
@@ -187,30 +179,31 @@ def iter_scene_tab(table: tablib.Dataset, scene_name: str) -> Iterable[str]:
     yield ""
 
 
-def iter_grid_tab(table: tablib.Dataset) -> Iterable[str]:
+def iter_grid_tab(table: Table) -> Iterable[str]:
     yield '=== "Full Breakdown"'
     yield textwrap.indent(export_grid(table), "    ")
     yield ""
 
 
-def iter_tabs(
-    table: tablib.Dataset, *, include_grid: bool = True, __headers=frozenset(Column)
-):
-    for header in (h for h in table.headers if h not in __headers):
+def iter_tabs(table: Table, *, include_grid: bool = True, __headers=frozenset(Column)):
+    for header in table:
+        # Have to preserve order, so filter on iteration
+        if header in __headers:
+            continue
         yield from iter_scene_tab(table, header)
     if include_grid:
         yield from iter_grid_tab(table)
 
 
-def export_tabs(table: tablib.Dataset) -> str:
+def export_tabs(table: Table) -> str:
     return "\n".join(iter_tabs(table))
 
 
-def export_grid(table: tablib.Dataset) -> str:
-    return table.export("cli", tablefmt="github")
+def export_grid(table: Table) -> str:
+    return _tabulate.tabulate(table, headers="keys", tablefmt="github")
 
 
-def export(table: tablib.Dataset, format: TableFormat = TableFormat.TABLE):
+def export(table: Table, format: TableFormat = TableFormat.TABLE):
     if format == TableFormat.TABLE:
         return export_grid(table)
     return export_tabs(table)

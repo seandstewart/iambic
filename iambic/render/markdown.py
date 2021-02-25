@@ -153,7 +153,7 @@ def iter_stats(play: ast.Play) -> Iterable[str]:
     yield ""
 
 
-def iter_meta(meta: ast.Metadata) -> Iterable[str]:
+def iter_publication(meta: ast.Metadata) -> Iterable[str]:
     yield '???+ "Publication Information"'
     yield ""
     for field in dataclasses.fields(meta):
@@ -200,7 +200,7 @@ def iter_overview(play: ast.Play) -> Iterable[str]:
     yield ACT.format("Overview")
     yield ""
     yield from iter_stats(play)
-    yield from iter_meta(play.meta)
+    yield from iter_publication(play.meta)
     yield ACT.format("Index")
     yield ""
     yield from iter_character_index(play)

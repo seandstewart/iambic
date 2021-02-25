@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 import iambic
 
-from tests.static import PARSED, TABLE, MATRIX, DATASET
+from tests.static import PARSED, TABLE, MATRIX
 
 
 play = PARSED
@@ -14,10 +14,3 @@ def test_tabulate():
 
 def test_matrix():
     assert iambic.render.table.matrix(TABLE) == MATRIX
-
-
-def test_dataset():
-    print(iambic.render.table.dataset(TABLE).csv)
-    assert (
-        iambic.render.table.dataset(TABLE).csv.rstrip("\n").replace("\r", "") == DATASET
-    )

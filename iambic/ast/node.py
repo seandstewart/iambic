@@ -252,7 +252,9 @@ class Persona:
     @classmethod
     def from_node(cls, node: "GenericNode") -> "Persona":
         return cls(
-            index=node.index, text=node.match_text, name=titleize(node.match_text),
+            index=node.index,
+            text=node.match_text,
+            name=titleize(node.match_text),
         )
 
 

@@ -137,7 +137,8 @@ class Index(Dict[str, Union[ast.ResolvedNodeT, ast.GenericNode]]):
     def get_speeches(self) -> List[ast.Speech]:
         # Candidates for members of speeches.
         members: List[Union[ast.Dialogue, ast.Action]] = sorted(
-            chain(self.dialogue, self.actions), key=ast.indexgetter,
+            chain(self.dialogue, self.actions),
+            key=ast.indexgetter,
         )
         associates: Set[Union[ast.Direction, ast.Entrance, ast.Exit]] = {
             *self.directions,
