@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 import enum
 import textwrap
-from typing import List, Dict, Tuple, Union, Type, Any, Iterable
+from typing import List, Dict, Tuple, Union, Type, Any, Iterable, cast
 
 import tabulate as _tabulate
 
@@ -121,10 +121,9 @@ class Tabulator:
         for act in play.body:
             # Epilogues and Prologues can be shaped like Scenes or Acts.
             # And can be top-level, like Acts.
-            children: ast.ActBodyT = (
-                act.body
-                if (isinstance(act, ast.Act) or act.as_act)  # type: ignore
-                else (act,)
+            children: ast.ActBodyT = cast(
+                ast.ActBodyT,
+                (act.body if (isinstance(act, ast.Act) or act.as_act) else (act,)),
             )
             for scene in children:
 
