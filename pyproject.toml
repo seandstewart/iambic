@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "iambic"
-version = "2.4.0"
+version = "2.4.1"
 description = "Data extraction and rendering library for Shakespearean text."
 authors = ["Sean Stewart <sean_stewart@me.com>"]
 license = "MIT"

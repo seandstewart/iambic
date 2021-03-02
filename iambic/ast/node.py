@@ -110,7 +110,9 @@ class Scene:
 
     @typic.cached_property
     def id(self) -> NodeID:
-        return NodeID(parameterize(f"{self.act}-{self.type.lower()}-{self.col}"))
+        return NodeID(
+            f"{self.act}-{self.type.lower()}-{roman.numeral(self.num).lower()}"
+        )
 
     @typic.cached_property
     def col(self) -> str:
@@ -384,6 +386,10 @@ class Speech:
         return linenos[0], linenos[-1]
 
     @typic.cached_property
+    def linepart(self) -> int:
+        return next((x.linepart for x in self.body if isinstance(x, Dialogue)), 0)
+
+    @typic.cached_property
     def num_lines(self) -> int:
         x, y = self.linerange
         # line count starts at 1
@@ -392,11 +398,13 @@ class Speech:
 
     @typic.cached_property
     def id(self) -> NodeID:
-        return NodeID(
+        uri = (
             f"{self.scene}-{self.persona}-{self.type.lower()}-"
-            f"{'{0}-{1}'.format(*self.linerange)}"
-            f"-{self.index}"
+            f"{'-'.join(map(str, self.linerange))}"
         )
+        if self.linepart:
+            uri += f"-{roman.numeral(self.linepart).lower()}"
+        return NodeID(uri)
 
 
 @typic.klass(unsafe_hash=True, slots=True)
