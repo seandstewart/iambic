@@ -5,7 +5,10 @@ from iambic import parse
 from tests.static import MD_RAW
 
 
+JSON = typic.tojson(parse.text(MD_RAW))
+
+
 def test_data():
     parsed = parse.text(MD_RAW)
-    data = parse.data(typic.tojson(parsed))
+    data = parse.data(JSON)
     assert data == parsed

@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
+from __future__ import annotations
+
+import dataclasses
 import functools
 from operator import attrgetter
 from typing import (
@@ -7,7 +10,6 @@ from typing import (
     Optional,
     Union,
     Tuple,
-    Any,
     Mapping,
     Type,
     List,
@@ -52,9 +54,6 @@ __all__ = (
     "GenericNode",
     "NodeID",
     "NodeType",
-    "node_deserializer",
-    "log_deserializer",
-    "isnodetype",
 )
 
 
@@ -70,7 +69,8 @@ def sort_body(body: Iterable[_T]) -> Tuple[_T, ...]:
     return tuple(sorted(body, key=indexgetter))
 
 
-@typic.klass(unsafe_hash=True, order=True, slots=True)
+@typic.slotted
+@dataclasses.dataclass(unsafe_hash=True, order=True)
 class Act:
     """A representation of a single Act in a Play."""
 
@@ -95,7 +95,8 @@ class Act:
         return cls(index=node.index, text=node.match_text, num=num)
 
 
-@typic.klass(unsafe_hash=True, slots=True)
+@typic.slotted
+@dataclasses.dataclass(unsafe_hash=True, order=True)
 class Scene:
     """A representation of a single Scene in a play."""
 
@@ -105,8 +106,8 @@ class Scene:
     num: int
     setting: Optional[str] = None
     act: Optional[NodeID] = None
-    body: "SceneBodyT" = typic.field(compare=False, hash=False, default=())  # type: ignore
-    personae: "PersonaeIDT" = typic.field(compare=False, hash=False, default=())  # type: ignore
+    body: SceneBodyT = typic.field(compare=False, hash=False, default=())  # type: ignore
+    personae: PersonaeIDT = typic.field(compare=False, hash=False, default=())  # type: ignore
 
     @typic.cached_property
     def id(self) -> NodeID:
@@ -143,7 +144,8 @@ class Scene:
         )
 
 
-@typic.klass(unsafe_hash=True, slots=True)
+@typic.slotted
+@dataclasses.dataclass(unsafe_hash=True, order=True)
 class Prologue:
     """A representation of a single Prologue in a play.
 
@@ -157,7 +159,7 @@ class Prologue:
     setting: Optional[str] = None
     act: Optional[NodeID] = None
     body: "LogueBodyT" = typic.field(compare=False, hash=False, default=())  # type: ignore
-    personae: "PersonaeIDT" = typic.field(compare=False, hash=False, default=())  # type: ignore
+    personae: PersonaeIDT = typic.field(compare=False, hash=False, default=())  # type: ignore
     as_act: bool = typic.field(init=False)  # type: ignore
 
     def __post_init__(self):
@@ -191,7 +193,8 @@ class Prologue:
         )
 
 
-@typic.klass(unsafe_hash=True, slots=True)
+@typic.slotted
+@dataclasses.dataclass(unsafe_hash=True, order=True)
 class Epilogue(Prologue):
     """A representation of a single Epilogue in a play.
 
@@ -202,7 +205,8 @@ class Epilogue(Prologue):
     type: ClassVar[NodeType] = NodeType.EPIL
 
 
-@typic.klass(unsafe_hash=True, slots=True)
+@typic.slotted
+@dataclasses.dataclass(unsafe_hash=True, order=True)
 class Intermission:
     """A representation of an Intermission in a play."""
 
@@ -226,7 +230,8 @@ class Intermission:
         return titleize(self.text)
 
 
-@typic.klass(unsafe_hash=True, slots=True)
+@typic.slotted
+@dataclasses.dataclass(unsafe_hash=True, order=True)
 class Persona:
     """A representation of a single character in a Play."""
 
@@ -260,7 +265,8 @@ class Persona:
         )
 
 
-@typic.klass(unsafe_hash=True, slots=True)
+@typic.slotted
+@dataclasses.dataclass(unsafe_hash=True, order=True)
 class Entrance:
     """A representation of an entrance for character(s) in a Scene."""
 
@@ -268,7 +274,7 @@ class Entrance:
     index: int
     text: str
     scene: NodeID
-    personae: "PersonaeIDT" = ()
+    personae: PersonaeIDT = ()
 
     @typic.cached_property
     def id(self) -> NodeID:
@@ -281,14 +287,16 @@ class Entrance:
         return cls(index=node.index, text=node.match_text, scene=node.parent)
 
 
-@typic.klass(unsafe_hash=True, slots=True)
+@typic.slotted
+@dataclasses.dataclass(unsafe_hash=True, order=True)
 class Exit(Entrance):
     """A representation of an exit for character(s) in a Scene."""
 
     type: ClassVar[NodeType] = NodeType.EXIT
 
 
-@typic.klass(unsafe_hash=True, slots=True)
+@typic.slotted
+@dataclasses.dataclass(unsafe_hash=True, order=True)
 class Action:
     """A representation of a stage direction related to a specific character."""
 
@@ -314,7 +322,8 @@ class Action:
         )
 
 
-@typic.klass(unsafe_hash=True, slots=True)
+@typic.slotted
+@dataclasses.dataclass(unsafe_hash=True, order=True)
 class Direction:
     """A representation of a stage direction."""
 
@@ -335,7 +344,8 @@ class Direction:
         return cls(action=node.match_text, scene=node.parent, index=node.index)
 
 
-@typic.klass(unsafe_hash=True, slots=True)
+@typic.slotted
+@dataclasses.dataclass(unsafe_hash=True, order=True)
 class Dialogue:
     """A representation of a line of dialogue for a character in a scene."""
 
@@ -367,14 +377,15 @@ class Dialogue:
         )
 
 
-@typic.klass(unsafe_hash=True, slots=True)
+@typic.slotted
+@dataclasses.dataclass(unsafe_hash=True, order=True)
 class Speech:
     """A representation of an unbroken piece of dialogue related to a single character."""
 
     type: ClassVar[NodeType] = NodeType.SPCH
     persona: NodeID
     scene: NodeID
-    body: "SpeechBodyT"
+    body: SpeechBodyT
     index: int
 
     def __post_init__(self):
@@ -407,7 +418,8 @@ class Speech:
         return NodeID(uri)
 
 
-@typic.klass(unsafe_hash=True, slots=True)
+@typic.slotted
+@dataclasses.dataclass(unsafe_hash=True, order=True)
 class Metadata:
     """General information about a given play."""
 
@@ -447,12 +459,13 @@ class Metadata:
         return dikt
 
 
-@typic.klass(unsafe_hash=True, slots=True)
+@typic.slotted
+@dataclasses.dataclass(unsafe_hash=True, order=True)
 class Play:
     """A representation of a play in its entirety."""
 
     type: ClassVar[NodeType] = NodeType.PLAY
-    body: "PlayBodyT" = ()
+    body: PlayBodyT = ()
     personae: Tuple[Persona, ...] = ()
     meta: Metadata = typic.field(default_factory=Metadata)  # type: ignore
 
@@ -476,8 +489,49 @@ class Play:
                 break
         return count
 
+    @functools.lru_cache(maxsize=1)
+    def asjsonld(self):
+        fn, ln = self.meta.author.split()
+        data = {
+            "@context": "https://schema.org",
+            "@type": "Play",
+            "name": self.meta.title,
+            "author": {
+                "@type": "Person",
+                "givenName": fn,
+                "familyName": ln,
+                "birthDate": "1564-04-23",
+                "birthPlace": {
+                    "@type": "Place",
+                    "address": "Stratford-upon-Avon, Warwickshire, England",
+                },
+                "deathDate": "1616-04-23",
+                "deathPlace": {
+                    "@type": "Place",
+                    "address": "Stratford-upon-Avon, Warwickshire, England",
+                },
+            },
+            "maintainer": {
+                "@type": "Organization",
+                "name": "Bardly.org",
+                "url": "https://bardly.org",
+            },
+            "size": {
+                "@type": "QuantitativeValue",
+                "unitCode": "N2",
+                "value": self.linecount,
+            },
+            "license": self.meta.rights,
+            "inLanguage": self.meta.language,
+            "keywords": [*self.meta.tags],
+            "character": [{"@type": "Person", "name": c.name} for c in self.personae],
+        }
 
-@typic.klass(unsafe_hash=True, slots=True)
+        return data
+
+
+@typic.slotted
+@dataclasses.dataclass(unsafe_hash=True, order=True)
 class GenericNode:
     """The root-object of a script.
 
@@ -485,7 +539,7 @@ class GenericNode:
     """
 
     __resolver_map__: ClassVar[
-        Mapping[NodeType, Type["ResolvedNodeT"]]
+        Mapping[NodeType, Type[ResolvedNodeT]]
     ] = typic.FrozenDict(
         {
             NodeType.ACT: Act,
@@ -508,14 +562,14 @@ class GenericNode:
     type: NodeType
     text: str
     index: int
-    # Additional typic.fields which may be present
+    # Additional fields which may be present
     lineno: Optional[int] = None
     linepart: Optional[int] = None
     # Given by text parser
     # If reading from JSON, we don't have/need this,
     # it will be provided inherently by the data-structure
     # on resolution-time.
-    match: typic.FrozenDict = typic.field(default_factory=typic.FrozenDict)  # type: ignore
+    match: typic.FrozenDict = dataclasses.field(default_factory=typic.FrozenDict)
     parent: Optional[NodeID] = None
     act: Optional[NodeID] = None
     scene: Optional[NodeID] = None
@@ -552,6 +606,7 @@ ResolvedNodeT = Union[
     Prologue,
     Epilogue,
     Persona,
+    Play,
     Entrance,
     Exit,
     Action,
@@ -570,32 +625,3 @@ LogueBodyT = Union[ActBodyT, SceneBodyT]
 PlayNodeT = Union[Act, Epilogue, Prologue]
 PlayBodyT = Tuple[PlayNodeT, ...]
 PersonaeIDT = Tuple[NodeID, ...]
-
-_RESOLVABLE = set(GenericNode.__resolver_map__.values())
-
-
-def node_deserializer(value: Any) -> Optional[ResolvedNodeT]:
-    if type(value) in _RESOLVABLE or value is None:
-        return value
-    if isinstance(value, GenericNode):
-        return value.resolved
-
-    if not isinstance(value, Mapping):
-        value = typic.transmute(dict, value)
-
-    handler: Type[ResolvedNodeT] = GenericNode.__resolver_map__[value.pop("type")]
-    resolved: ResolvedNodeT = typic.transmute(handler, value)  # type: ignore
-    return resolved
-
-
-def log_deserializer(value):
-    return typic.protocol(Tuple[ResolvedNodeT, ...]).transmute(value)  # type: ignore
-
-
-@functools.lru_cache(maxsize=None)
-def isnodetype(obj: Type, *, __candidates=frozenset(_RESOLVABLE)) -> bool:
-    is_valid = obj is GenericNode or (
-        getattr(obj, "__origin__", None) is Union
-        and {*getattr(obj, "__args__", ())}.issubset(__candidates)
-    )
-    return is_valid
