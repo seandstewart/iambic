@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 # flake8: noqa
 import enum
+from typing import Union
 
 import typic
 
@@ -16,4 +17,4 @@ class InputType(str, enum.Enum):
     DATA = "data"
 
 
-protocol = typic.protocol(ResolvedNodeT)  # type: ignore
+protocol = typic.protocol(Union[Play, ResolvedNodeT])  # type: ignore

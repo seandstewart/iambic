@@ -606,7 +606,6 @@ ResolvedNodeT = Union[
     Prologue,
     Epilogue,
     Persona,
-    Play,
     Entrance,
     Exit,
     Action,
