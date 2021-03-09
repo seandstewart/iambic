@@ -38,6 +38,7 @@ def _safe_resolve(
 _safe_id = functools.partial(_safe_resolve, attr="id")
 
 
+@typic.slotted(dict=False)
 @dataclasses.dataclass
 class _PreNode:
     type: NodeType
@@ -59,6 +60,7 @@ class _PreNode:
         )
 
 
+@typic.slotted(dict=False)
 @dataclasses.dataclass
 class ParserContext:
     parent: typing.Optional[GenericNode] = None
@@ -109,13 +111,21 @@ class Parser:
         node = _PreNode(type=NodeType.DIAL, match={NodeType.DIAL: line}, text=line)
         for node_type in cls._NODE_TYPES & match_dict.keys():
             node_type = NodeType(node_type)
-            if node_type == NodeType.DIR:
+            if node_type in cls._DIRS:
                 bookend = match_dict.get("start") or match_dict.get("end")
                 if bookend:
                     if cls._ACTION_BOOKENDS & {*bookend}:
+                        match_dict[NodeType.ACTION] = match_dict.pop(node_type)
                         node_type = NodeType.ACTION
-                        match_dict[NodeType.ACTION] = match_dict.pop(NodeType.DIR)
                     node.match, node.type = match_dict, node_type
+                    break
+                else:
+                    # If there's no bookend,
+                    #   we can't reliably determine it should be a direction/action
+                    #   until later in the parsing when we have more context.
+                    #   So set to Dialogue for now.
+                    match_dict[NodeType.DIAL] = match_dict.pop(node_type)
+                    node.match, node.type = match_dict, NodeType.DIAL
                     break
             else:
                 node.match, node.type = match_dict, node_type

@@ -42,6 +42,7 @@ generic_persona = ast.GenericNode(ast.NodeType.PERS, "Bar", 0, 0)
         ("_Enter Foo, bar._", ast.NodeType.ENTER),
         ("_Exit Foo, bar._", ast.NodeType.EXIT),
         ("_Exeunt severally._", ast.NodeType.EXIT),
+        ("enters the confines of a tavern claps me his sword", ast.NodeType.DIAL),
         ("Literally anything else.", ast.NodeType.DIAL),
     ],
 )
