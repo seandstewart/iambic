@@ -32,7 +32,7 @@ include = ["*.md", "*.json"]
 [tool.poetry.dependencies]
 python = "^3.11"
 typical = "^2"
-ujson = "^2"
+ujson = "^5"
 markdown = "^3"
 pymdown-extensions = "^9"
 html2text = "^2020.1.16"
