@@ -11,16 +11,16 @@ import yaml
 from html2text import html2text
 
 from iambic.ast import (
+    JOIN_TOKENS,
+    NODE_PATTERN,
     GenericNode,
+    Index,
+    InputType,
+    Metadata,
+    NodeToken,
     NodeType,
     Play,
-    InputType,
-    JOIN_TOKENS,
     ResolvedNodeT,
-    Index,
-    NodeToken,
-    NODE_PATTERN,
-    Metadata,
 )
 
 logger = logging.getLogger(__name__)
@@ -255,7 +255,6 @@ class Parser:
     def extract_metadata(
         cls, text: str
     ) -> typing.Tuple[typing.Optional[Metadata], str]:
-
         meta = None
         if text.startswith(NodeToken.META1):
             text = text[len(NodeToken.META1) + 1 :]

@@ -2,12 +2,11 @@
 # -*- coding: UTF-8 -*-
 import enum
 import textwrap
-from typing import List, Dict, Tuple, Union, Type, Any, Iterable, cast
+from typing import Any, Dict, Iterable, List, Tuple, Type, Union, cast
 
 import tabulate as _tabulate
 
 from iambic import ast
-
 
 Row = List[str]
 Table = Dict[str, Row]
@@ -25,6 +24,9 @@ class Column(str, enum.Enum):
     SORT = "Sort"
     GSWAP = " [SW]"
 
+    def __str__(self) -> str:
+        return self.value
+
 
 class Marker(str, enum.Enum):
     """The character to use when marking a persona as present in a scene."""
@@ -33,6 +35,9 @@ class Marker(str, enum.Enum):
     PRES = "O"
     NONE = ""
 
+    def __str__(self) -> str:
+        return self.value
+
 
 class RichMarker(str, enum.Enum):
     """The rich text character to use when marking a persona as present in a scene."""
@@ -40,6 +45,9 @@ class RichMarker(str, enum.Enum):
     SPEAK = "💬"
     PRES = "👁️‍🗨️"
     NONE = ""
+
+    def __str__(self) -> str:
+        return self.value
 
 
 class Tabulator:
@@ -117,7 +125,7 @@ class Tabulator:
         char_column: List[str] = table[Column.CHAR.value]
         cline_column: List[int] = table[Column.CLINE.value]
         char_index: Dict[str, int] = {y: x for x, y in enumerate(char_column)}
-        personae = {x.id: x for x in play.personae}
+        personae = {str(x.id): x for x in play.personae}
         for act in play.body:
             # Epilogues and Prologues can be shaped like Scenes or Acts.
             # And can be top-level, like Acts.
@@ -126,7 +134,6 @@ class Tabulator:
                 (act.body if (isinstance(act, ast.Act) or act.as_act) else (act,)),
             )
             for scene in children:
-
                 table[scene.col] = [marker_type.NONE.value for _ in char_column]
                 if isinstance(scene, ast.Intermission):
                     continue

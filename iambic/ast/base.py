@@ -3,7 +3,6 @@
 import enum
 import re
 
-
 __all__ = (
     "NodeType",
     "NodeToken",
@@ -40,6 +39,9 @@ class NodeToken(str, enum.Enum):
     JOIN = "/"
     META1 = "---"
     META2 = "..."
+
+    def __str__(self):
+        return self.value
 
 
 JOIN_TOKENS = (NodeToken.JOIN, NodeToken.JOIN1, NodeToken.JOIN2)

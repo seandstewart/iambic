@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 import iambic
-
-from tests.static import PARSED, TABLE, MATRIX
-
+from tests.static import MATRIX, PARSED, TABLE
 
 play = PARSED
 

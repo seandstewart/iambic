@@ -7,8 +7,8 @@ from typing import Union
 import typic
 
 from .base import *
-from .node import *
 from .index import *
+from .node import *
 
 
 class InputType(str, enum.Enum):

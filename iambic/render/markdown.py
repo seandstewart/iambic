@@ -3,12 +3,13 @@
 import dataclasses
 import functools
 from textwrap import indent
-from typing import Iterable, Mapping, Union, cast, Dict, Tuple
+from typing import Dict, Iterable, Mapping, Tuple, Union, cast
 
 from inflection import titleize
 
 from iambic import ast
-from .table import RichMarker, tabulate, iter_tabs, export_grid, Column
+
+from .table import Column, RichMarker, export_grid, iter_tabs, tabulate
 
 TITLE = "# {0}"
 ACT = "## {0}"
@@ -196,7 +197,6 @@ def iter_character_index(play: ast.Play):
 
 
 def iter_overview(play: ast.Play) -> Iterable[str]:
-
     yield ACT.format("Overview")
     yield ""
     yield from iter_stats(play)

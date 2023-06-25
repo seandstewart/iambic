@@ -1,30 +1,29 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 import pathlib
-from typing import Set, Iterator, Optional, Union, Mapping
+from typing import Iterator, Mapping, Self
 
 import inflection
 import typic
 
-from iambic import parse, ast
+from iambic import ast, parse
 
 
 class Corpus:
-
     PATH: pathlib.Path = pathlib.Path(__file__).parent
     CACHE_SIZE: int = 1000
 
-    def __init__(self):
+    def __init__(self: Self):
         self._corpus: Mapping[str, pathlib.Path] = {x.name: x for x in self}
         self.__hits: int = 0
 
-    def _maybe_reset(self):
+    def _maybe_reset(self: Self):
         if self.__hits > self.CACHE_SIZE:
             self.__getitem__.cache_clear()
             self.__hits = 0
 
     @staticmethod
-    def _get_names(path: pathlib.Path) -> Set[str]:
+    def _get_names(path: pathlib.Path) -> set[str]:
         names = {path.name}
         for child in path.iterdir():
             if child.suffix == ".md":
@@ -64,7 +63,7 @@ class Corpus:
 
     def get(
         self, item: str, default: str = None, *, parsed: bool = False
-    ) -> Optional[Union[str, ast.Play, ast.Index]]:
+    ) -> str | ast.Play | ast.Index | None:
         try:
             text = self[item]
             return parse.text(text) if parsed else text

@@ -3,8 +3,8 @@
 # flake8: noqa
 import pathlib
 
-from .table import TABLE, MATRIX
 from .parsed import PARSED
+from .table import MATRIX, TABLE
 
 DIR = pathlib.Path(__file__).parent
 HTML = (DIR / "foo.html").read_text()

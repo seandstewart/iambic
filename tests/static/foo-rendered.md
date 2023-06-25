@@ -42,12 +42,12 @@
 
 ??? "Character Navigation (Grid)"
 
-    | Dramatis Personae   |   First Appearance |   Lines | Prologue                               | I: Prologue                             | Intermission   | I: i                                | I: Epilogue                                 |
-    |---------------------|--------------------|---------|----------------------------------------|-----------------------------------------|----------------|-------------------------------------|---------------------------------------------|
-    | Foo                 |                  2 |       6 | [💬](#prologue-0-foo-speech-1-1)       |                                         |                | [💬](#act-i-scene-i-foo-speech-5-5) | [💬](#act-i-epilogue-35-foo-speech-8-8)     |
-    | A Bar               |                  4 |       1 | [💬](#prologue-0-a-bar-speech-2-2)     |                                         |                |                                     |                                             |
-    | Bar's Foo           |                  6 |       1 | [💬](#prologue-0-bar-s-foo-speech-3-3) |                                         |                |                                     |                                             |
-    | Bar                 |                 12 |       4 |                                        | [💬](#act-i-prologue-10-bar-speech-4-4) |                | [💬](#act-i-scene-i-bar-speech-6-6) | [💬](#act-i-epilogue-35-foo-bar-speech-9-9) |
+    | Dramatis Personae   |   First Appearance |   Lines | Prologue                              | I: Prologue                            | Intermission   | I: i                               | I: Epilogue                                |
+    |---------------------|--------------------|---------|---------------------------------------|----------------------------------------|----------------|------------------------------------|--------------------------------------------|
+    | Foo                 |                  2 |       6 | [💬](#prologue-0-foo-speech-1-1)       |                                        |                | [💬](#act-i-scene-i-foo-speech-5-5) | [💬](#act-i-epilogue-35-foo-speech-8-8)     |
+    | A Bar               |                  4 |       1 | [💬](#prologue-0-a-bar-speech-2-2)     |                                        |                |                                    |                                            |
+    | Bar's Foo           |                  6 |       1 | [💬](#prologue-0-bar-s-foo-speech-3-3) |                                        |                |                                    |                                            |
+    | Bar                 |                 12 |       4 |                                       | [💬](#act-i-prologue-10-bar-speech-4-4) |                | [💬](#act-i-scene-i-bar-speech-6-6) | [💬](#act-i-epilogue-35-foo-bar-speech-9-9) |
 
 ??? "Dramatis Personae"
 

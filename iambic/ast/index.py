@@ -6,15 +6,13 @@ from itertools import chain
 from typing import (
     DefaultDict,
     Dict,
-    Optional,
+    Iterable,
     List,
-    Set,
-    Union,
+    Mapping,
+    Optional,
+    Self,
     ValuesView,
     cast,
-    Mapping,
-    Iterable,
-    Tuple,
 )
 
 import iambic.ast.node as ast
@@ -22,13 +20,11 @@ import iambic.ast.node as ast
 __all__ = ("Index",)
 
 
-IndexKeyT = Union[ast.NodeType, str]
-IndexInputT = Union[
-    Mapping[str, ast.GenericNode], Iterable[Tuple[str, ast.GenericNode]]
-]
+IndexKeyT = ast.NodeType | str
+IndexInputT = Mapping[str, ast.GenericNode] | Iterable[tuple[str, ast.GenericNode]]
 
 
-class Index(Dict[str, Union[ast.ResolvedNodeT, ast.GenericNode]]):
+class Index(Dict[str, ast.ResolvedNodeT | ast.GenericNode]):
     """An ordered collection of nodes in a script.
 
     ``Parser.parse`` builds a list of :class:`GenericNode`, which can be resolved into the specific
@@ -113,10 +109,8 @@ class Index(Dict[str, Union[ast.ResolvedNodeT, ast.GenericNode]]):
         inter = {*self.get_values(ast.NodeType.INTER)}
         return cast(Optional[ast.Intermission], inter.pop() if inter else None)
 
-    def resolve_presence(self):
-        members: Iterable[Union[ast.Entrance, ast.Exit]] = chain(
-            self.entrances, self.exits
-        )
+    def resolve_presence(self: Self):
+        members: Iterable[ast.Entrance | ast.Exit] = chain(self.entrances, self.exits)
         personae = {x.text: x for x in self.personae}
         for member in members:
             present = (*(p.id for t, p in personae.items() if t in member.text),)
@@ -127,7 +121,7 @@ class Index(Dict[str, Union[ast.ResolvedNodeT, ast.GenericNode]]):
     def _resolve_events(
         self,
         speech: List[ast.SpeechNodeT],
-        associates: Set[Union[ast.Direction, ast.Entrance, ast.Exit]],
+        associates: set[ast.Direction | ast.Entrance | ast.Exit],
     ):
         start, end = speech[0].index, speech[-1].index
         events = {e for e in associates if start < e.index < end}
@@ -136,11 +130,11 @@ class Index(Dict[str, Union[ast.ResolvedNodeT, ast.GenericNode]]):
 
     def get_speeches(self) -> List[ast.Speech]:
         # Candidates for members of speeches.
-        members: List[Union[ast.Dialogue, ast.Action]] = sorted(
+        members: List[ast.Dialogue | ast.Action] = sorted(
             chain(self.dialogue, self.actions),
             key=ast.indexgetter,
         )
-        associates: Set[Union[ast.Direction, ast.Entrance, ast.Exit]] = {
+        associates: set[ast.Direction | ast.Entrance | ast.Exit] = {
             *self.directions,
             *self.entrances,
             *self.exits,
@@ -150,7 +144,7 @@ class Index(Dict[str, Union[ast.ResolvedNodeT, ast.GenericNode]]):
         speech: List[ast.SpeechNodeT] = []
         speeches: List[ast.Speech] = []
 
-        for i, node in enumerate(members):
+        for node in members:
             # If we're in a new scene, we're definitely in a new speech.
             if node.scene != scene.id:
                 if persona and scene and speech:
@@ -198,8 +192,8 @@ class Index(Dict[str, Union[ast.ResolvedNodeT, ast.GenericNode]]):
         return speeches
 
     def claimed_events(
-        self, speeches: Set[ast.Speech]
-    ) -> Set[Union[ast.Direction, ast.Exit, ast.Entrance]]:
+        self, speeches: set[ast.Speech]
+    ) -> set[ast.Direction | ast.Exit | ast.Entrance]:
         return {
             y
             for x in speeches
@@ -210,33 +204,35 @@ class Index(Dict[str, Union[ast.ResolvedNodeT, ast.GenericNode]]):
     def finalize_scenes(self) -> Iterable[ast.ActNodeT]:
         speeches = {*self.get_speeches()}
         claimed = self.claimed_events(speeches)
-        directions = {*self.directions} - claimed
-        entrances = {*self.entrances} - claimed
-        exits = {*self.exits} - claimed
-        children = speeches | directions | entrances | exits
+        directions = {*self.directions, *self.entrances, *self.exits} - claimed
+        children: set[ast.Direction | ast.Entrance | ast.Exit | ast.Speech] = (
+            speeches | directions  # type: ignore[assignment]
+        )
         scenes = []
-        scene: Union[ast.Scene, ast.Epilogue, ast.Prologue]
-        for scene in chain(self.scenes, self.epilogues, self.prologues):  # type: ignore
-            child_nodes = {c for c in children if c.scene == scene.id}
-            s: ast.Speech
-            personae: Set[ast.NodeID] = {
-                s.persona  # type: ignore
-                for s in child_nodes
-                if s.type == ast.NodeType.SPCH
-            }
-            if child_nodes:
-                scene.body = ast.sort_body(child_nodes)
-                scene.personae = (*personae,)
-                scenes.append(scene)
-                children -= child_nodes
+        scene: ast.Scene | ast.Epilogue | ast.Prologue
+        scene_groups = cast(
+            Iterable[Iterable[ast.Scene | ast.Epilogue | ast.Prologue]],
+            (self.scenes, self.epilogues, self.prologues),
+        )
+        for scene_group in scene_groups:
+            for scene in scene_group:
+                child_nodes = {c for c in children if c.scene == scene.id}
+                personae: set[ast.NodeID] = {
+                    s.persona for s in child_nodes if isinstance(s, ast.Speech)
+                }
+                if child_nodes:
+                    scene.body = ast.sort_body(child_nodes)
+                    scene.personae = (*personae,)
+                    scenes.append(scene)
+                    children -= child_nodes
 
         return scenes
 
     def finalize_acts(
         self, scenes: Iterable[ast.ActNodeT]
-    ) -> List[Union[ast.Act, ast.Epilogue, ast.Prologue]]:
+    ) -> List[ast.Act | ast.Epilogue | ast.Prologue]:
         scenes = {*scenes}
-        logues: Set[Union[ast.Prologue, ast.Epilogue]] = {
+        logues: set[ast.Prologue | ast.Epilogue] = {
             s
             for s in scenes
             if isinstance(s, (ast.Epilogue, ast.Prologue)) and not s.act
@@ -253,8 +249,8 @@ class Index(Dict[str, Union[ast.ResolvedNodeT, ast.GenericNode]]):
             if not log.body and not log.act
         )
         for act in chain(_logues, self.acts):  # type: ignore
-            children: Set[
-                Union[ast.Scene, ast.Intermission, ast.Prologue, ast.Epilogue]
+            children: set[
+                ast.Scene | ast.Intermission | ast.Prologue | ast.Epilogue
             ] = {s for s in scenes if s.act == act.id}
             if children:
                 scenes -= children
@@ -282,5 +278,5 @@ class Index(Dict[str, Union[ast.ResolvedNodeT, ast.GenericNode]]):
 
     @staticmethod
     @functools.lru_cache(maxsize=2000)
-    def node_sort(node: Union[ast.ResolvedNodeT, ast.GenericNode]):
+    def node_sort(node: ast.ResolvedNodeT | ast.GenericNode):
         return node.index
