@@ -11,6 +11,7 @@ jobs:
     permissions:
     # IMPORTANT: this permission is mandatory for trusted publishing
       id-token: write
+      contents: read
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python
@@ -21,5 +22,8 @@ jobs:
       uses: abatilo/actions-poetry@v2.1.4
       with:
         poetry-version: 1.5.1
+    - name: Mint token
+      id: mint
+      uses: tschm/token-mint-action@v1.0.2
     - name: Build and publish
-      run: poetry publish --build
+      run: poetry publish -u __token__ -p '${{ steps.mint.outputs.api-token }}' --build
