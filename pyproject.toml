@@ -34,7 +34,7 @@ python = "^3.11"
 typical = "^2"
 ujson = "^5"
 markdown = "^3"
-pymdown-extensions = "^9"
+pymdown-extensions = "^10"
 html2text = "^2020.1.16"
 tabulate = "^0.8.9"
 
