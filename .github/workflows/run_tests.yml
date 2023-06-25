@@ -9,12 +9,13 @@ jobs:
     strategy:
       matrix:
         python-version: [3.11]
+        poetry-version: [1.5.1]
 
     steps:
     - uses: actions/checkout@v2
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -22,7 +23,9 @@ jobs:
       run: python -c "import sys; print(sys.version)"
 
     - name: Install Poetry
-      uses: abatilo/actions-poetry@v2.0.0
+      uses: abatilo/actions-poetry@v2.1.4
+      with:
+        poetry-version: ${{ matrix.poetry-version }}
 
     - name: Cache Poetry virtualenv
       uses: actions/cache@v1
