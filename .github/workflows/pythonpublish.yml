@@ -8,6 +8,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: publish
+    permissions:
+    # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python
@@ -19,7 +22,4 @@ jobs:
       with:
         poetry-version: 1.5.1
     - name: Build and publish
-      run: poetry publish -u $PYPI_USERNAME -p $PYPI_PASSWORD --build
-      env:
-        PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: poetry publish --build
